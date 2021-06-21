@@ -8,6 +8,7 @@ from load_data import IMG_HEIGHT, IMG_WIDTH, NUM_WRITERS, letter2index, tokens, 
 from modules_tro import normalize
 import os
 import sys
+import config 
 
 '''Take turns to open the comments below to run 4 scenario experiments'''
 
@@ -17,11 +18,14 @@ import sys
 #text_corpus = 'corpora_english/in_vocab.subset.tro.37'
 
 writer = sys.argv[1]
+n_words = 2000
 #create training data for OCR
-folder = 'Synthesized_data/'+ writer
-img_base = '../data/'
-target_file = '/home/padl21t1/convolve-attend-spell/research-seq2seq-HTR/parser/GAN_test_'+writer+'.filter27'
+folder = '../synthesized_images/'+ writer
+#img_base = '../../data_folder/words/'
+img_base = config.data_dir
+target_file = '../train_images_names/style_of_' + writer
 text_corpus = 'corpora_english/brown-azAZ.tr'
+model = '../pretrained_models/gan/contran-2050.model'
 #
 #folder = 'res_3.oo_vocab_tr_writer'
 #img_base = '/home/lkang/datasets/iam_final_forms/words_from_forms/'
@@ -119,7 +123,7 @@ def test_writer(wid, model_file):
     global text_corpus
     with open(text_corpus, 'r') as _f:
         texts = _f.read().split()
-        texts = texts[0:2000]
+        texts = texts[0:n_words]
     labels = torch.from_numpy(np.array([np.array(label_padding(label, num_tokens)) for label in texts])).to(gpu)
 
     '''model loading'''
@@ -161,6 +165,8 @@ if __name__ == '__main__':
     with open(target_file, 'r') as _f:
         data = _f.readlines()
     wids = list(set([i.split(',')[0] for i in data]))
+    if not n_words:
+        n_words = 2000
     for wid in wids:
         #test_writer(wid, 'save_weights/<your best model>')
-        test_writer(wid, 'save_weights/contran-2050.model')
+        test_writer(wid, model)

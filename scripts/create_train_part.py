@@ -2,9 +2,9 @@ import os
 import sys
 
 writer = sys.argv[1]
-path = '/home/padl21t1/research-GANwriting/Synthesized_data/'+writer+'/'
+path = '../synthesized_images/'+writer+'/'
 
-train_partition = open('train_OCR_'+writer+'.part','w+')
+train_partition = open(f'../HWR_train_partitions/partition_{writer}','w+')
 
 for f in os.listdir(path):
     writer = f.split('-')[0]
