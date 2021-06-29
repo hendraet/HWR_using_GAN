@@ -41,10 +41,11 @@ tokens = {'GO_TOKEN': 0, 'END_TOKEN': 1, 'PAD_TOKEN': 2}
 num_tokens = len(tokens.keys())
 
 class IAM_words(D.Dataset):
-    def __init__(self, file_label, augmentation=True):
+    def __init__(self, file_label, image_dir=datasetConfig.baseDir_word, augmentation=True):
         self.file_label = file_label
         self.output_max_len = OUTPUT_MAX_LEN
         self.augmentation = augmentation
+        self.image_dir = image_dir
 
         self.transformer = marcalAugmentor.augmentor
 
@@ -62,11 +63,7 @@ class IAM_words(D.Dataset):
         if RM_BACKGROUND:
             file_name, thresh = file_name.split(',')
             thresh = int(thresh)
-        if WORD_LEVEL:
-            subdir = 'words/'
-        else:
-            subdir = 'lines/'
-        url = baseDir + subdir + file_name + '.png'
+        url = self.image_dir + file_name + '.png'
         img = cv2.imread(url, 0)
         if img is None:
             print('###!Cannot find image: ' + url)
@@ -177,14 +174,11 @@ if __name__ == '__main__':
     import time
     start = time.time()
     SHOW_IMG = False
-    if WORD_LEVEL:
-        imgName = 'p03-080-05-02'
-        subdic = 'words/'
-    else:
-        imgName = 'p03-080-05'
-        subdic = 'lines/'
+
+    imgName = 'p03-080-05'
+    # subdic = 'lines/'
     if SHOW_IMG:
-        img = cv2.imread(baseDir+subdic+imgName+'.png', 0)
+        img = cv2.imread(baseDir+imgName+'.png', 0)
         data = IAM_words(None, augmentation=True)
         out_imgs = [data.readImage_keepRatio(imgName.split('.')[0]+',167', False)[0] for i in range(20)]
 

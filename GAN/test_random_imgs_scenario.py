@@ -8,7 +8,8 @@ from load_data import IMG_HEIGHT, IMG_WIDTH, NUM_WRITERS, letter2index, tokens, 
 from modules_tro import normalize
 import os
 import sys
-import config 
+import config
+from os import listdir
 
 '''Take turns to open the comments below to run 4 scenario experiments'''
 
@@ -17,13 +18,11 @@ import config
 #target_file = 'Groundtruth/gan.iam.tr_va.gt.filter27'
 #text_corpus = 'corpora_english/in_vocab.subset.tro.37'
 
-writer = sys.argv[1]
-n_words = int(sys.argv[2])
+n_words = int(sys.argv[1])
 #create training data for OCR
-folder = '../synthesized_images/'+ writer
+folder = '../synthesized_images/unknown_authors'
 #img_base = '../../data_folder/words/'
-img_base = config.data_dir
-target_file = '../train_images_names/style_of_' + writer
+img_base = '../input_imgs/'
 text_corpus = 'corpora_english/brown-azAZ.tr'
 model = '../pretrained_models/gan/contran-2050.model'
 #
@@ -39,16 +38,16 @@ model = '../pretrained_models/gan/contran-2050.model'
 
 
 '''data preparation'''
-data_dict = dict()
-with open(target_file, 'r') as _f:
-    data = _f.readlines()
-    data = [i.split(' ')[0] for i in data]
-    data = [i.split(',') for i in data]
-for wid, index in data:
-    if wid in data_dict.keys():
-        data_dict[wid].append(index)
-    else:
-        data_dict[wid] = [index]
+# data_dict = dict()
+# with open(target_file, 'r') as _f:
+#     data = _f.readlines()
+#     data = [i.split(' ')[0] for i in data]
+#     data = [i.split(',') for i in data]
+# for wid, index in data:
+#     if wid in data_dict.keys():
+#         data_dict[wid].append(index)
+#     else:
+#         data_dict[wid] = [index]
 
 
 '''Try on different datasets'''
@@ -69,9 +68,10 @@ if not os.path.exists(folder):
 
 gpu = torch.device('cuda')
 
-def test_writer(wid, model_file):
+def test_writer(model_file):
     def read_image(file_name, thresh=None):
-        url = img_base + file_name + '.png'
+        url = img_base + file_name
+        print(url)
         img = cv2.imread(url, 0)
         if thresh:
             #img[img>thresh] = 255
@@ -110,7 +110,13 @@ def test_writer(wid, model_file):
         return ll
 
     '''data preparation'''
-    imgs = [read_image(i) for i in data_dict[wid]]
+    # original img reading
+    # imgs = [read_image(i) for i in data_dict[wid]]
+    # ------------------------------
+    file_names = [f for f in listdir('../input_imgs')]
+    imgs = [read_image(i) for i in file_names]
+
+    # ---------------------
     random.shuffle(imgs)
     final_imgs = imgs[:50]
     if len(final_imgs) < 50:
@@ -156,15 +162,19 @@ def test_writer(wid, model_file):
                 xg = xg.cpu().numpy().squeeze()
                 xg = normalize(xg)
                 xg = 255 - xg
-                ret = cv2.imwrite(folder+'/'+wid+'-'+str(num)+'.'+label+'-'+pred+'.png', xg)
+                url = folder+'/'+str(run_id)+'/'+str(num)+'-'+label+'-'+pred+'.png'
+                ret = cv2.imwrite(url, xg)
                 if not ret:
                     import pdb; pdb.set_trace()
                     xg
 
 if __name__ == '__main__':
-    with open(target_file, 'r') as _f:
-        data = _f.readlines()
-    wids = list(set([i.split(',')[0] for i in data]))
-    for wid in wids:
-        #test_writer(wid, 'save_weights/<your best model>')
-        test_writer(wid, model)
+
+    file_names = [int(f) for f in listdir(folder)]
+    if not len(file_names) == 0:
+        run_id = max(file_names) + 1
+    else:
+        run_id = 1
+    if not os.path.isdir(f'{folder}/{run_id}'):
+        os.makedirs(f'{folder}/{run_id}')
+    test_writer(model)

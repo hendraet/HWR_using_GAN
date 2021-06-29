@@ -2,5 +2,5 @@
 # make sure that all the groundtruth files can be found in that location, 
 # a folder "words/" should also be there, which contains all the images
 # without any folder or sub-folder.
-baseDir_word = '../../data_folder/'
+baseDir_word = '../data_folder/words/'
 baseDir_line = '/home/lkang/datasets/iam_final_lines/'

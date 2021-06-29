@@ -36,7 +36,7 @@ writer = sys.argv[1]
 
 images = df_gan[df_gan[1] == str(writer)]
 
-with open(f'../train_images_names/style_of_{writer}', 'w+') as f:
+with open(f'train_images_names/style_of_{writer}', 'w+') as f:
     i = 0
     for index, image in images.iterrows():
         tmp = image[1] + ',' + image[0] + ' ' + image[2] + '\n'
@@ -46,7 +46,7 @@ with open(f'../train_images_names/style_of_{writer}', 'w+') as f:
             break
     f.close()
 
-with open(f'../HWR_Groundtruth/gt_{writer}', 'w') as f:
+with open(f'HWR_Groundtruth/gt_{writer}', 'w') as f:
     i = 0
     for index, image in images.iterrows():
         tmp = image[0] + ',' + image[1] + ' ' + image[2] + '\n'

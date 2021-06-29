@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import numpy as np
 import time
 import os
+import sys
 #from LogMetric import Logger
 import argparse
 #from models.encoder_plus import Encoder
@@ -21,9 +22,9 @@ from models.attention import locationAttention as Attention
 from models.seq2seq import Seq2Seq
 from utils import visualizeAttn, writePredict, writeLoss, HEIGHT, WIDTH, output_max_len, vocab_size, FLIP, WORD_LEVEL, load_data_func, tokens
 
-parser = argparse.ArgumentParser(description='seq2seq net', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('start_epoch', type=int, help='load saved weights from which epoch')
-args = parser.parse_args()
+# parser = argparse.ArgumentParser(description='seq2seq net', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+# parser.add_argument('start_epoch', type=int, help='load saved weights from which epoch')
+# args = parser.parse_args()
 
 #torch.cuda.set_device(1)
 
@@ -51,7 +52,7 @@ EARLY_STOP_EPOCH = 20 # None: no early stopping
 HIDDEN_SIZE_ENC = 512
 HIDDEN_SIZE_DEC = 512 # model/encoder.py SUM_UP=False: enc:dec = 1:2  SUM_UP=True: enc:dec = 1:1
 CON_STEP = None # CON_STEP = 4 # encoder output squeeze step
-CurriculumModelID = args.start_epoch
+CurriculumModelID = sys.argv[1]
 #CurriculumModelID = -1 # < 0: do not use curriculumLearning, train from scratch
 #CurriculumModelID = 170 # 'save_weights/seq2seq-170.model.backup'
 EMBEDDING_SIZE = 60 # IAM
