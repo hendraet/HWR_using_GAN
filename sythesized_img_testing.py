@@ -13,8 +13,8 @@ data = data.split()
 train_partition.close()
 
 
-# result = exec(open('predict.py').read())
-res_cer = sub.call(['python3', 'predict.py', '45'], stdout=sub.PIPE)
+# result = exec(open('train_with_synth_imgs.py').read())
+res_cer = sub.call(['python3', 'train_with_synth_imgs.py', '45'], stdout=sub.PIPE)
 result = res_cer.stdout.read().decode('utf8')
 
 

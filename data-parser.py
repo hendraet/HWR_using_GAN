@@ -2,14 +2,14 @@ import pandas as pd
 import sys
 
 
-with open('../HWR/RWTH_partition/RWTH.iam_word_gt_final.test.thresh', 'r') as f_ocr:
+with open('HWR/RWTH_partition/RWTH.iam_word_gt_final.test.thresh', 'r') as f_ocr:
     data_ocr = f_ocr.readlines()
     file_label_all = [i[:-1].split(' ') for i in data_ocr]
     file_label_img_writer = [i[0].split(',') for i in file_label_all]
     ocr_list = [[file_label_img_writer[i][0], file_label_img_writer[i][1], file_label_all[i][1]]
         for i, line in enumerate(file_label_img_writer)]
 
-with open('../GAN/Groundtruth/gan.iam.test.gt.filter27', 'r') as f_gan:
+with open('GAN/Groundtruth/gan.iam.test.gt.filter27', 'r') as f_gan:
 
     gan_test_data = f_gan.readlines()
     file_label_all = [i[:-1].split(' ') for i in gan_test_data]
