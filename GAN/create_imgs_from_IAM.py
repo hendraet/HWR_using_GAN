@@ -3,12 +3,11 @@ import Levenshtein as Lev
 import random
 import numpy as np
 import torch
-from network_tro import ConTranModel
-from load_data import IMG_HEIGHT, IMG_WIDTH, NUM_WRITERS, letter2index, tokens, num_tokens, OUTPUT_MAX_LEN, index2letter
-from modules_tro import normalize
+from .network_tro import ConTranModel
+from .load_data import IMG_HEIGHT, IMG_WIDTH, NUM_WRITERS, letter2index, tokens, num_tokens, OUTPUT_MAX_LEN, index2letter
+from .modules_tro import normalize
 import os
 import sys
-import config 
 
 '''Take turns to open the comments below to run 4 scenario experiments'''
 
@@ -17,15 +16,15 @@ import config
 #target_file = 'Groundtruth/gan.iam.tr_va.gt.filter27'
 #text_corpus = 'corpora_english/in_vocab.subset.tro.37'
 
-writer = sys.argv[1]
-n_words = int(sys.argv[2])
-#create training data for OCR
-folder = '../synthesized_images/'+ writer
-#img_base = '../../data_folder/words/'
-img_base = config.data_dir
-target_file = '../train_images_names/style_of_' + writer
-text_corpus = 'corpora_english/brown-azAZ.tr'
-model = '../pretrained_models/gan/contran-2050.model'
+# writer = sys.argv[1]
+# n_words = int(sys.argv[2])
+# #create training data for OCR
+# folder = '../synthesized_images/'+ writer
+# #img_base = '../../data_folder/words/'
+# img_base = config.data_dir
+# target_file = '../train_images_names/style_of_' + writer
+# text_corpus = 'corpora_english/brown-azAZ.tr'
+# model = '../pretrained_models/gan/contran-2050.model'
 #
 #folder = 'res_3.oo_vocab_tr_writer'
 #img_base = '/home/lkang/datasets/iam_final_forms/words_from_forms/'
@@ -36,20 +35,6 @@ model = '../pretrained_models/gan/contran-2050.model'
 #img_base = '/home/lkang/datasets/iam_final_forms/words_from_forms/'
 #target_file = 'Groundtruth/gan.iam.test.gt.filter27'
 #text_corpus = 'corpora_english/oov.common_words'
-
-
-'''data preparation'''
-data_dict = dict()
-with open(target_file, 'r') as _f:
-    data = _f.readlines()
-    data = [i.split(' ')[0] for i in data]
-    data = [i.split(',') for i in data]
-for wid, index in data:
-    if wid in data_dict.keys():
-        data_dict[wid].append(index)
-    else:
-        data_dict[wid] = [index]
-
 
 '''Try on different datasets'''
 #folder = 'res_img_gw'
@@ -64,12 +49,14 @@ for wid, index in data:
 #img_base = '/home/lkang/datasets/EsposallesOfficial/words_lines.official.old/'
 #target_file = 'esposalles_total.gt.azAZ'
 
-if not os.path.exists(folder):
-    os.makedirs(folder)
+# if not os.path.exists(folder):
+#     os.makedirs(folder)
+#
+# gpu = torch.device('cuda')
 
-gpu = torch.device('cuda')
+def test_writer(indexes, model_file, n_words, img_base, text_corpus, result_folder, writer):
+    gpu = torch.device('cuda')
 
-def test_writer(wid, model_file):
     def read_image(file_name, thresh=None):
         url = img_base + file_name + '.png'
         img = cv2.imread(url, 0)
@@ -110,7 +97,7 @@ def test_writer(wid, model_file):
         return ll
 
     '''data preparation'''
-    imgs = [read_image(i) for i in data_dict[wid]]
+    imgs = [read_image(i) for i in indexes]
     random.shuffle(imgs)
     final_imgs = imgs[:50]
     if len(final_imgs) < 50:
@@ -120,7 +107,6 @@ def test_writer(wid, model_file):
 
     imgs = torch.from_numpy(np.array(final_imgs)).unsqueeze(0).to(gpu) # 1,50,64,216
 
-    global text_corpus
     with open(text_corpus, 'r') as _f:
         texts = _f.read().split()
         texts = texts[0:n_words]
@@ -156,15 +142,41 @@ def test_writer(wid, model_file):
                 xg = xg.cpu().numpy().squeeze()
                 xg = normalize(xg)
                 xg = 255 - xg
-                ret = cv2.imwrite(folder+'/'+wid+'-'+str(num)+'.'+label+'-'+pred+'.png', xg)
+                ret = cv2.imwrite(result_folder+'/'+str(writer)+'-'+str(num)+'.'+label+'-'+pred+'.png', xg)
                 if not ret:
                     import pdb; pdb.set_trace()
                     xg
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
+#    with open(target_file, 'r') as _f:
+#        data = _f.readlines()
+#     wids = list(set([i.split(',')[0] for i in data]))
+#     for wid in wids:
+#         # test_writer(wid, 'save_weights/<your best model>')
+#         test_writer(wid, model)
+
+
+def create_images_of_writer(writer, n_words, img_base):
+    result_folder = f'synthesized_images/{writer}'
+    # img_base = '../../data_folder/words/'
+    img_base = img_base
+    target_file = f'train_images_names/style_of_{writer}'
+    text_corpus = 'GAN/corpora_english/brown-azAZ.tr'
+    model = 'pretrained_models/gan/contran-2050.model'
+
+    if not os.path.exists(result_folder):
+        os.makedirs(result_folder)
+
     with open(target_file, 'r') as _f:
         data = _f.readlines()
-    wids = list(set([i.split(',')[0] for i in data]))
-    for wid in wids:
-        #test_writer(wid, 'save_weights/<your best model>')
-        test_writer(wid, model)
+        data = [i.split(' ')[0] for i in data]
+    indexes = [i.split(',')[1] for i in data]
+
+    test_writer(indexes, model, n_words,  img_base, text_corpus, result_folder, writer)
+
+
+
+if __name__ == '__main__':
+    create_images_of_writer(sys.argv[1], int(sys.argv[2]), sys.argv[3])
+
+

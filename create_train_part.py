@@ -1,10 +1,7 @@
 import os
 import sys
 
-# writer = int(sys.argv[1])
-# if writer < 1000:
-#     path = 'synthesized_images/'+writer+'/'
-# else :
+
 
 
 def create_train_partition(writer, path):
@@ -24,6 +21,7 @@ def create_train_partition(writer, path):
 def create_train_partition_for_run(run_id, path):
     train_partition = open(f'HWR_train_partitions/run_partitions/partition_{run_id}', 'w+')
 
+
     for f in os.listdir(path):
         writer = f.split('-')[0]
         filename = f[:-4]
@@ -32,4 +30,9 @@ def create_train_partition_for_run(run_id, path):
         train_partition.write(s)
 
     train_partition.close()
+
+
+
+#if __name__ == '__main__':
+
 
