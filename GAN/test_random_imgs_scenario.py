@@ -37,19 +37,6 @@ model = '../pretrained_models/gan/contran-2050.model'
 #text_corpus = 'corpora_english/oov.common_words'
 
 
-'''data preparation'''
-# data_dict = dict()
-# with open(target_file, 'r') as _f:
-#     data = _f.readlines()
-#     data = [i.split(' ')[0] for i in data]
-#     data = [i.split(',') for i in data]
-# for wid, index in data:
-#     if wid in data_dict.keys():
-#         data_dict[wid].append(index)
-#     else:
-#         data_dict[wid] = [index]
-
-
 '''Try on different datasets'''
 #folder = 'res_img_gw'
 #img_base = '/home/lkang/datasets/WashingtonDataset_words/words/'

@@ -15,12 +15,12 @@ import argparse
 #from models.encoder_plus import Encoder
 #from models.encoder import Encoder
 #from models.encoder_bn_relu import Encoder
-from models.encoder_vgg import Encoder
-from models.decoder import Decoder
-from models.attention import locationAttention as Attention
+from .models.encoder_vgg import Encoder
+from .models.decoder import Decoder
+from .models.attention import locationAttention as Attention
 #from models.attention import TroAttention as Attention
-from models.seq2seq import Seq2Seq
-from utils import visualizeAttn, writePredict, writeLoss, HEIGHT, WIDTH, output_max_len, vocab_size, FLIP, WORD_LEVEL, load_data_func, tokens
+from .models.seq2seq import Seq2Seq
+from .utils import visualizeAttn, writePredict, writeLoss, HEIGHT, WIDTH, output_max_len, vocab_size, FLIP, WORD_LEVEL, load_data_func, tokens
 
 # parser = argparse.ArgumentParser(description='seq2seq net', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 # parser.add_argument('start_epoch', type=int, help='load saved weights from which epoch')

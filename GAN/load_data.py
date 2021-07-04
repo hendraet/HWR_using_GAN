@@ -4,7 +4,7 @@ import random
 import string
 import cv2
 import numpy as np
-from pairs_idx_wid_iam import wid2label_tr, wid2label_te
+from .pairs_idx_wid_iam import wid2label_tr, wid2label_te
 
 CREATE_PAIRS = False
 
@@ -20,7 +20,7 @@ OUTPUT_MAX_LEN = MAX_CHARS+2 # <GO>+groundtruth+<END>
 
 '''The folder of IAM word images, please change to your own one before run it!!'''
 img_base = '../data'
-text_corpus = 'corpora_english/brown-azAZ.tr'
+text_corpus = 'GAN/corpora_english/brown-azAZ.tr'
 
 with open(text_corpus, 'r') as _f:
     text_corpus = _f.read().split()

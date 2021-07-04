@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import cv2
-import loadData2_vgg as loadData
+import HWR.loadData2_vgg as loadData
 
 HEIGHT = loadData.IMG_HEIGHT
 WIDTH = loadData.IMG_WIDTH

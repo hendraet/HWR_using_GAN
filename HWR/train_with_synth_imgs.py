@@ -1,19 +1,19 @@
 from sys import argv
-from main_torch_latest import BATCH_SIZE,  sort_batch, HIDDEN_SIZE_DEC, HIDDEN_SIZE_ENC, EMBEDDING_SIZE, TRADEOFF_CONTEXT_EMBED, Bi_GRU, CON_STEP, crit, learning_rate, lr_milestone, lr_gamma
+from .main_torch_latest import BATCH_SIZE,  sort_batch, HIDDEN_SIZE_DEC, HIDDEN_SIZE_ENC, EMBEDDING_SIZE, TRADEOFF_CONTEXT_EMBED, Bi_GRU, CON_STEP, crit, learning_rate, lr_milestone, lr_gamma
 import subprocess as sub
-from loadData2_vgg import IAM_words
-from utils import writePredict, HEIGHT, WIDTH, output_max_len, vocab_size, FLIP
+from .loadData2_vgg import IAM_words
+from .utils import writePredict, HEIGHT, WIDTH, output_max_len, vocab_size, FLIP
 import time
 import torch
 from torch import optim
-from models.encoder_vgg import Encoder
-from models.decoder import Decoder
-from models.attention import locationAttention as Attention
-from models.seq2seq import Seq2Seq
+from .models.encoder_vgg import Encoder
+from .models.decoder import Decoder
+from .models.attention import locationAttention as Attention
+from .models.seq2seq import Seq2Seq
 import os
 import config
 
-EPOCH = 10
+EPOCH = 5
 log_softmax = torch.nn.LogSoftmax(dim=-1)
 
 

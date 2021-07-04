@@ -2,8 +2,10 @@ import torch.utils.data as D
 import cv2
 import numpy as np
 #from torchvision import transforms
-import marcalAugmentor
-import datasetConfig
+
+
+from HWR import marcalAugmentor, datasetConfig
+# import .datasetConfig
 #import Augmentor
 #from torchsample.transforms import RangeNormalize
 #import torch
