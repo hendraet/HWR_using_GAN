@@ -52,6 +52,8 @@ EARLY_STOP_EPOCH = 20 # None: no early stopping
 HIDDEN_SIZE_ENC = 512
 HIDDEN_SIZE_DEC = 512 # model/encoder.py SUM_UP=False: enc:dec = 1:2  SUM_UP=True: enc:dec = 1:1
 CON_STEP = None # CON_STEP = 4 # encoder output squeeze step
+# TODO: check that this is invoked properly and doesn't accidentally read the cmd line arg for writer_id. In any
+#  case, this has to be removed and handled properly in any way
 CurriculumModelID = sys.argv[1]
 #CurriculumModelID = -1 # < 0: do not use curriculumLearning, train from scratch
 #CurriculumModelID = 170 # 'save_weights/seq2seq-170.model.backup'

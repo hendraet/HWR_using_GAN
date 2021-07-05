@@ -50,7 +50,7 @@ def train(train_loader,seq2seq, opt, epoch, author):
     return total_loss
 
 
-def train_with_synthesized_imgs(author, n_synth_imgs):
+def train_with_synthesized_imgs(author, n_synth_imgs, config):
     # base_dir = 'parser/'
     filename = f'HWR_train_partitions/partition_{author}'
     image_folder = f'synthesized_images/{author}/'
@@ -66,7 +66,7 @@ def train_with_synthesized_imgs(author, n_synth_imgs):
     encoder = Encoder(HIDDEN_SIZE_ENC, HEIGHT, WIDTH, Bi_GRU, CON_STEP, FLIP).cuda()
     decoder = Decoder(HIDDEN_SIZE_DEC, EMBEDDING_SIZE, vocab_size, Attention, TRADEOFF_CONTEXT_EMBED).cuda()
     seq2seq = Seq2Seq(encoder, decoder, output_max_len, vocab_size).cuda()
-    model_file = config.hwr_default_model
+    model_file = config['hwr_default_model']
     print('Loading ' + model_file)
     seq2seq.load_state_dict(torch.load(model_file)) #load
     opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
@@ -85,7 +85,7 @@ def train_with_synthesized_imgs(author, n_synth_imgs):
 
     for epoch in range(EPOCH):
         scheduler.step()
-        lr = scheduler.get_last_lr()[0]
+        lr = scheduler.get_last_lr()[0]  # TODO: needed?
         train_loss = train(data_loader, seq2seq, opt, epoch + 1, author)
         print(f'epoch: {epoch + 1} train_loss: {train_loss}')
         writeLoss(train_loss, author, 'train', n_synth_imgs)

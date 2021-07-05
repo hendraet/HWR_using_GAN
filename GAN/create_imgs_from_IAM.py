@@ -157,6 +157,7 @@ def test_writer(indexes, model_file, n_words, img_base, text_corpus, result_fold
 
 
 def create_images_of_writer(writer, n_words, img_base):
+    # TODO: these strings could also go into a config file
     result_folder = f'synthesized_images/{writer}'
     # img_base = '../../data_folder/words/'
     img_base = img_base
