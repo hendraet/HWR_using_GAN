@@ -100,7 +100,7 @@ def test_writer(model_file):
     # original img reading
     # imgs = [read_image(i) for i in data_dict[wid]]
     # ------------------------------
-    file_names = [f for f in listdir('../input_imgs')]
+    file_names = [f for f in listdir(img_base)]
     imgs = [read_image(i) for i in file_names]
 
     # ---------------------

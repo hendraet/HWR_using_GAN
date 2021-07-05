@@ -20,27 +20,22 @@ args = parser.parse_args()
 
 writer = args.writer
 n_generated_images = args.n_generated_images
+synthesized_img_path = f'synthesized_images/{writer}/'
 
 # create index file with words for writer in train_images_names
 # create index file with words for HWR testing in HWR_Groundtruth
-#subprocess.call(['python3', 'data_parser.py', writer])
 parse_data(writer)
 
 # delete old images
-filepath = f'synthesized_images/{writer}'
-if os.path.isdir(filepath):
-    shutil.rmtree(filepath)
-#subprocess.call(f'rm synthesized_images/{writer}/*', shell=True)
+if os.path.isdir(synthesized_img_path):
+    shutil.rmtree(synthesized_img_path)
 
 # create images
-#subprocess.call(['python3', 'create_imgs_from_IAM.py', writer, n_generated_images], cwd='GAN/')
 create_imgs_from_IAM.create_images_of_writer(writer, n_generated_images, config.data_dir)
 
 # create HWR training partition from generated words
-
-create_train_partition(writer, f'synthesized_images/{writer}/')
-# subprocess.call(['python3', 'create_train_part.py', writer])
-
+create_train_partition(writer, synthesized_img_path)
 
 # train HWR with synthesized images of this writer
-train_with_synth_imgs.train_with_synthesized_imgs(writer, n_generated_images)
+labels_file = f'HWR_train_partitions/partition_{writer}'
+train_with_synth_imgs.train_and_test_with_synthesized_imgs(writer, n_generated_images, labels_file, synthesized_img_path)

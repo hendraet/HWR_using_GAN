@@ -54,7 +54,7 @@ import sys
 #
 # gpu = torch.device('cuda')
 
-def test_writer(indexes, model_file, n_words, img_base, text_corpus, result_folder, writer):
+def test_writer(img_names, model_file, n_words, img_base, text_corpus, result_folder, id):
     gpu = torch.device('cuda')
 
     def read_image(file_name, thresh=None):
@@ -97,7 +97,7 @@ def test_writer(indexes, model_file, n_words, img_base, text_corpus, result_fold
         return ll
 
     '''data preparation'''
-    imgs = [read_image(i) for i in indexes]
+    imgs = [read_image(i) for i in img_names]
     random.shuffle(imgs)
     final_imgs = imgs[:50]
     if len(final_imgs) < 50:
@@ -142,7 +142,8 @@ def test_writer(indexes, model_file, n_words, img_base, text_corpus, result_fold
                 xg = xg.cpu().numpy().squeeze()
                 xg = normalize(xg)
                 xg = 255 - xg
-                ret = cv2.imwrite(result_folder+'/'+str(writer)+'-'+str(num)+'.'+label+'-'+pred+'.png', xg)
+                path = result_folder+'/'+str(id)+'-'+str(num)+'.'+label+'-'+pred+'.png'
+                ret = cv2.imwrite(path, xg)
                 if not ret:
                     import pdb; pdb.set_trace()
                     xg
@@ -156,13 +157,15 @@ def test_writer(indexes, model_file, n_words, img_base, text_corpus, result_fold
 #         test_writer(wid, model)
 
 
-def create_images_of_writer(writer, n_words, img_base):
-    result_folder = f'synthesized_images/{writer}'
+
+text_corpus = 'GAN/corpora_english/brown-azAZ.tr'
+model = 'pretrained_models/gan/contran-2050.model'
+
+def create_images_of_writer(writer_id, n_words, img_base):
+    result_folder = f'synthesized_images/{writer_id}'
     # img_base = '../../data_folder/words/'
     img_base = img_base
-    target_file = f'train_images_names/style_of_{writer}'
-    text_corpus = 'GAN/corpora_english/brown-azAZ.tr'
-    model = 'pretrained_models/gan/contran-2050.model'
+    target_file = f'train_images_names/style_of_{writer_id}'
 
     if not os.path.exists(result_folder):
         os.makedirs(result_folder)
@@ -170,9 +173,25 @@ def create_images_of_writer(writer, n_words, img_base):
     with open(target_file, 'r') as _f:
         data = _f.readlines()
         data = [i.split(' ')[0] for i in data]
-    indexes = [i.split(',')[1] for i in data]
+    img_names = [i.split(',')[1] for i in data]
 
-    test_writer(indexes, model, n_words,  img_base, text_corpus, result_folder, writer)
+    test_writer(img_names, model, n_words,  img_base, text_corpus, result_folder, writer_id)
+
+
+
+
+def create_images_from_input_folder(run_id, n_words, img_base):
+    result_folder = f'synthesized_images/run/{run_id}'
+    img_base = img_base
+
+    if not os.path.exists(result_folder):
+        os.makedirs(result_folder)
+
+    file_names = [f.strip('.png') for f in os.listdir(img_base)]
+
+    test_writer(file_names, model, n_words, img_base, text_corpus, result_folder, run_id)
+
+
 
 
 

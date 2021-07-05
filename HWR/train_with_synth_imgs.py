@@ -17,9 +17,9 @@ EPOCH = 5
 log_softmax = torch.nn.LogSoftmax(dim=-1)
 
 
-def writeLoss(loss_value, author, flag, n_synth_imgs):
+def writeLoss(loss_value, id, flag, n_synth_imgs):
     folder_name = 'results/'
-    file_name = folder_name + f'/{author}/{n_synth_imgs}_imgs_{flag}_loss'
+    file_name = folder_name + f'/{id}/{n_synth_imgs}_imgs_{flag}_loss'
     if not os.path.exists(os.path.dirname(file_name)):
         os.makedirs(os.path.dirname(file_name))
     with open(file_name, 'a') as f:
@@ -27,7 +27,9 @@ def writeLoss(loss_value, author, flag, n_synth_imgs):
         f.write('\n')
 
 
-def train(train_loader,seq2seq, opt, epoch, author):
+
+
+def train(train_loader,seq2seq, opt, epoch, id, predict=True):
     
     seq2seq.train()
     total_loss = 0
@@ -35,7 +37,8 @@ def train(train_loader,seq2seq, opt, epoch, author):
         #train_in = train_in.unsqueeze(1)
         train_in, train_out = train_in.cuda(), train_out.cuda()
         output, attn_weights = seq2seq(train_in, train_out, train_in_len, teacher_rate=0, train=True) # (100-1, 32, 62+1)
-        writePredict(epoch, train_index, output, f'author_{author}_train')
+        if predict:
+            writePredict(epoch, train_index, output, f'author_{id}_train')
         train_label = train_out.permute(1, 0)[1:].contiguous().view(-1)#remove<GO>
         output_l = output.view(-1, vocab_size) # remove last <EOS>
       
@@ -50,12 +53,45 @@ def train(train_loader,seq2seq, opt, epoch, author):
     return total_loss
 
 
-def train_with_synthesized_imgs(author, n_synth_imgs):
-    # base_dir = 'parser/'
-    filename = f'HWR_train_partitions/partition_{author}'
-    image_folder = f'synthesized_images/{author}/'
 
-    with open(filename, 'r') as f_tr:
+def train_with_synth_imgs_from_input_folder(id, labels_file, image_folder):
+
+    with open(labels_file, 'r') as f_tr:
+        data = f_tr.readlines()
+        file_labels = [i[:-1].split(' ') for i in data]
+
+    data_set = IAM_words(file_labels, image_folder, augmentation=False)
+    data_loader = torch.utils.data.DataLoader(data_set, collate_fn=sort_batch, batch_size=BATCH_SIZE, shuffle=False,
+                                              num_workers=0, pin_memory=True)
+
+    encoder = Encoder(HIDDEN_SIZE_ENC, HEIGHT, WIDTH, Bi_GRU, CON_STEP, FLIP).cuda()
+    decoder = Decoder(HIDDEN_SIZE_DEC, EMBEDDING_SIZE, vocab_size, Attention, TRADEOFF_CONTEXT_EMBED).cuda()
+    seq2seq = Seq2Seq(encoder, decoder, output_max_len, vocab_size).cuda()
+    model_file = config.hwr_default_model
+    print('Loading ' + model_file)
+    seq2seq.load_state_dict(torch.load(model_file)) #load
+    opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
+    scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
+
+    start_epoch = 0
+
+    for epoch in range(EPOCH):
+        scheduler.step()
+        lr = scheduler.get_last_lr()[0]
+        train_loss = train(data_loader, seq2seq, opt, epoch + 1, id, False)
+        print(f'epoch: {epoch + 1} train_loss: {train_loss}')
+
+    folder_weights = f'final_weights_HWR/{id}/'
+    if not os.path.exists(folder_weights):
+        os.makedirs(folder_weights)
+    torch.save(seq2seq.state_dict(), f'{folder_weights}/seq2seq-{id}.model')
+
+
+
+
+def train_and_test_with_synthesized_imgs(author, n_synth_imgs, labels_file, image_folder):
+
+    with open(labels_file, 'r') as f_tr:
         data = f_tr.readlines()
         file_labels = [i[:-1].split(' ') for i in data]
 
