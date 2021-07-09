@@ -58,7 +58,7 @@ def test_writer(img_names, model_file, n_words, img_base, text_corpus, result_fo
     gpu = torch.device('cuda')
 
     def read_image(file_name, thresh=None):
-        url = img_base + file_name + '.png'
+        url = img_base + file_name
         img = cv2.imread(url, 0)
         if thresh:
             #img[img>thresh] = 255
@@ -159,7 +159,7 @@ def test_writer(img_names, model_file, n_words, img_base, text_corpus, result_fo
 
 
 text_corpus = 'GAN/corpora_english/brown-azAZ.tr'
-model = 'pretrained_models/gan/contran-2050.model'
+model = '/home/padl21t1/research-GANwriting/save_weights/contran-2050.model'
 
 def create_images_of_writer(writer_id, n_words, img_base):
     result_folder = f'synthesized_images/{writer_id}'
@@ -173,7 +173,7 @@ def create_images_of_writer(writer_id, n_words, img_base):
     with open(target_file, 'r') as _f:
         data = _f.readlines()
         data = [i.split(' ')[0] for i in data]
-    img_names = [i.split(',')[1] for i in data]
+    img_names = [i.split(',')[1] + '.png' for i in data]
 
     test_writer(img_names, model, n_words,  img_base, text_corpus, result_folder, writer_id)
 
@@ -187,7 +187,7 @@ def create_images_from_input_folder(run_id, n_words, img_base):
     if not os.path.exists(result_folder):
         os.makedirs(result_folder)
 
-    file_names = [f.strip('.png') for f in os.listdir(img_base)]
+    file_names = [f for f in os.listdir(img_base)]
 
     test_writer(file_names, model, n_words, img_base, text_corpus, result_folder, run_id)
 

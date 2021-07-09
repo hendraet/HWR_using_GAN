@@ -16,7 +16,7 @@ VGG_NORMAL = True
 # valid data: 6445
 # test data: 13752
 
-RM_BACKGROUND = True
+RM_BACKGROUND = False
 FLIP = False # flip the image
 #BATCH_SIZE = 64
 if WORD_LEVEL:
@@ -66,7 +66,6 @@ class IAM_words(D.Dataset):
             file_name, thresh = file_name.split(',')
             thresh = int(thresh)
         url = self.image_dir + file_name + '.png'
-        print(url)
         img = cv2.imread(url, 0)
         if img is None:
             print('###!Cannot find image: ' + url)

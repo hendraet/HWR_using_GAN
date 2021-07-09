@@ -22,10 +22,9 @@ def create_train_partition_for_run(run_id, path):
 
 
     for f in os.listdir(path):
-        writer = f.split('-')[0]
         filename = f[:-4]
         label = f.split('.')[1].split('-')[0]
-        s = filename + "," + writer + " " + label + "\n"
+        s = filename + " " + label + "\n"
         train_partition.write(s)
 
     train_partition.close()

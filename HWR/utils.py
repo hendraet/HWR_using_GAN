@@ -37,11 +37,11 @@ def visualizeAttn(img, first_img_real_len, attn, epoch, count_n, name):
         output = np.flip(output, 1)
     cv2.imwrite(folder_name+'/'+name+'_'+str(epoch)+'.jpg', output)
 
-def writePredict(epoch, index, pred, flag): # [batch_size, vocab_size] * max_output_len
-    folder_name = 'pred_logs'
+def writePredict(folder_name, file_name, index, pred): # [batch_size, vocab_size] * max_output_len
+    # folder_name = 'pred_logs'
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
-    file_prefix = folder_name+'/'+flag+'_predict_seq.'
+    # file_prefix = f'{folder_name}/.'
     #if flag == 'train':
     #    file_prefix = folder_name+'/train_predict_seq.'
     #elif flag == 'valid':
@@ -55,7 +55,7 @@ def writePredict(epoch, index, pred, flag): # [batch_size, vocab_size] * max_out
     pred2 = pred2.cpu().numpy()
 
     batch_count_n = []
-    with open(file_prefix+str(epoch)+'.log', 'a') as f:
+    with open(f'{folder_name}/{file_name}.log', 'a') as f:
         for n, seq in zip(index, pred2):
             f.write(n+' ')
             count_n = 0
