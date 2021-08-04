@@ -18,6 +18,8 @@ NUM_WRITERS = 500 # iam
 NORMAL = True
 OUTPUT_MAX_LEN = MAX_CHARS+2 # <GO>+groundtruth+<END>
 
+FILE_FORMAT = '.png'
+
 '''The folder of IAM word images, please change to your own one before run it!!'''
 img_base = '../data'
 text_corpus = 'GAN/corpora_english/brown-azAZ.tr'
@@ -139,7 +141,7 @@ class IAM_words(D.Dataset):
         return len(self.data_dict)
 
     def read_image_single(self, file_name):
-        url = os.path.join(img_base, file_name + '.png')
+        url = os.path.join(img_base, file_name + FILE_FORMAT)
         img = cv2.imread(url, 0)
 
         if img is None and os.path.exists(url):

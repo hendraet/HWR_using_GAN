@@ -88,7 +88,7 @@ def train_with_synth_imgs_from_input_folder(id, labels_file, image_folder):
     decoder = Decoder(HIDDEN_SIZE_DEC, EMBEDDING_SIZE, vocab_size, Attention, TRADEOFF_CONTEXT_EMBED).cuda()
     seq2seq = Seq2Seq(encoder, decoder, output_max_len, vocab_size).cuda()
     model_file = config.hwr_default_model
-    print('Loading ' + model_file)
+    #print('Loading ' + model_file)
     seq2seq.load_state_dict(torch.load(model_file)) #load
     opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
     scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
@@ -99,7 +99,7 @@ def train_with_synth_imgs_from_input_folder(id, labels_file, image_folder):
         scheduler.step()
         lr = scheduler.get_last_lr()[0]
         train_loss = train(data_loader, seq2seq, opt, "", "", False)
-        print(f'epoch: {epoch + 1} train_loss: {train_loss}')
+        #print(f'epoch: {epoch + 1} train_loss: {train_loss}')
 
     folder_weights = f'final_weights_HWR/{id}/'
     if not os.path.exists(folder_weights):
@@ -124,11 +124,11 @@ def test_with_imgs_from_input_folder(labels_file, image_folder, model_path, pred
     decoder = Decoder(HIDDEN_SIZE_DEC, EMBEDDING_SIZE, vocab_size, Attention, TRADEOFF_CONTEXT_EMBED).cuda()
     seq2seq = Seq2Seq(encoder, decoder, output_max_len, vocab_size).cuda()
     model_file = model_path
-    print('Loading ' + model_file)
+    #print('Loading ' + model_file)
     seq2seq.load_state_dict(torch.load(model_file)) #load
 
     test_loss = test(test_loader, seq2seq, prediction_path, f'{prediction_file_prefix}test_predict_seq')
-    print(f'test_loss: {test_loss}')
+    print(f'{model_path}: {test_loss}')
 
 
 
@@ -201,7 +201,7 @@ def predict(model, author):
     decoder = Decoder(HIDDEN_SIZE_DEC, EMBEDDING_SIZE, vocab_size, Attention, TRADEOFF_CONTEXT_EMBED).cuda()
     seq2seq = Seq2Seq(encoder, decoder, output_max_len, vocab_size).cuda()
     model_file = 'save_weights/seq2seq-' + str(model) +'.model'
-    print('Loading ' + model_file)
+    #print('Loading ' + model_file)
     seq2seq.load_state_dict(torch.load(model_file)) #load
     test(get_test_loader(author), seq2seq, model, author)
 
@@ -224,4 +224,4 @@ if __name__ == '__main__':
     # cer = calculate_cer(model, author)
     # print(cer)
 
-    train_with_synthesized_imgs(author)
+    # train_with_synthesized_imgs(author)

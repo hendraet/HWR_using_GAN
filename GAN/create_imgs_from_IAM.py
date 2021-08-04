@@ -114,9 +114,9 @@ def test_writer(img_names, model_file, n_words, img_base, text_corpus, result_fo
 
     '''model loading'''
     model = ConTranModel(NUM_WRITERS, 0, True).to(gpu)
-    print('Loading ' + model_file)
+    #print('Loading ' + model_file)
     model.load_state_dict(torch.load(model_file)) #load
-    print('Model loaded')
+    #print('Model loaded')
     model.eval()
     num = 0
     with torch.no_grad():
@@ -159,7 +159,7 @@ def test_writer(img_names, model_file, n_words, img_base, text_corpus, result_fo
 
 
 text_corpus = 'GAN/corpora_english/brown-azAZ.tr'
-model = '/home/padl21t1/research-GANwriting/save_weights/contran-2050.model'
+model = '/home/padl21t1/research-GANwriting/save_weights/contran-4050.model'
 
 def create_images_of_writer(writer_id, n_words, img_base):
     result_folder = f'synthesized_images/{writer_id}'
@@ -180,7 +180,7 @@ def create_images_of_writer(writer_id, n_words, img_base):
 
 
 
-def create_images_from_input_folder(run_id, n_words, img_base):
+def create_images_from_input_folder(run_id, n_words, img_base, model):
     result_folder = f'synthesized_images/run/{run_id}'
     img_base = img_base
 

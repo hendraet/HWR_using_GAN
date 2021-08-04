@@ -65,7 +65,7 @@ class IAM_words(D.Dataset):
         if RM_BACKGROUND:
             file_name, thresh = file_name.split(',')
             thresh = int(thresh)
-        url = self.image_dir + file_name + '.png'
+        url = self.image_dir + file_name
         img = cv2.imread(url, 0)
         if img is None:
             print('###!Cannot find image: ' + url)

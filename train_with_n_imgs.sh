@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-for j in {1..3}
+for j in {1..10}
 do
   for i in {5001..9001..1000}
   do

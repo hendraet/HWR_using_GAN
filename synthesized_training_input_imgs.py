@@ -9,11 +9,13 @@ from HWR.train_with_synth_imgs import train_with_synth_imgs_from_input_folder, t
 
 parser = argparse.ArgumentParser(description='create synthesized pics from input imgs and train HWR with them.')
 parser.add_argument('--n_generated_images', default=150, type=int)
+parser.add_argument('--model_id', default=3050, type=int)
 args = parser.parse_args()
 
 n_generated_images = args.n_generated_images
 synthesized_img_folder = 'synthesized_images/run'
 hwr_training_folder = 'HWR_train_partitions/run_partitions'
+model = f'/home/padl21t1/research-GANwriting/save_weights/contran-{args.model_id}.model'
 
 # find run_id
 file_names = [int(f) for f in listdir(synthesized_img_folder)]
@@ -23,7 +25,7 @@ else:
     run_id = 1
 
 # create images
-create_images_from_input_folder(run_id, n_generated_images, 'input_imgs/')
+create_images_from_input_folder(run_id, n_generated_images, 'washington_input/', model)
 
 # create HWR training partition from generated words
 create_train_partition_for_run(run_id, f'{synthesized_img_folder}/{run_id}')
@@ -34,8 +36,8 @@ result_folder = f'results/{run_id}'
 train_with_synth_imgs_from_input_folder(run_id, labels_file, f'{synthesized_img_folder}/{run_id}/')
 
 # test trained model on test imgs
-labels_file = f'test_imgs/labels.txt'
-test_with_imgs_from_input_folder(labels_file, 'test_imgs/', f'final_weights_HWR/{run_id}/seq2seq-{run_id}.model', f'id_{run_id}_')
+labels_file = f'washington_test/labels.txt'
+test_with_imgs_from_input_folder(labels_file, 'washington_test/', f'final_weights_HWR/{run_id}/seq2seq-{run_id}.model', f'id_{run_id}_')
 
 # compare to baseline model
-test_with_imgs_from_input_folder(labels_file, 'test_imgs/', config.hwr_default_model, f'id_{run_id}_original_')
+test_with_imgs_from_input_folder(labels_file, 'washington_test/', config.hwr_default_model, f'id_{run_id}_original_')
