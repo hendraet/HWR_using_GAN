@@ -1,4 +1,3 @@
-import sys
 import os
 import shutil
 import config
@@ -22,7 +21,7 @@ writer = args.writer
 n_generated_images = args.n_generated_images
 synthesized_img_path = f'synthesized_images/{writer}/'
 
-# create index file with words for writer in train_images_names
+# create index file with words of this writer in train_images_names for creating imgs with GAN
 # create index file with words for HWR testing in HWR_Groundtruth
 parse_data(writer)
 
@@ -31,7 +30,7 @@ if os.path.isdir(synthesized_img_path):
     shutil.rmtree(synthesized_img_path)
 
 # create images
-create_imgs_from_IAM.create_images_of_writer(writer, n_generated_images, config.data_dir)
+create_imgs_from_IAM.create_images_of_writer(writer, n_generated_images, config.data_dir, config.gan_default_model)
 
 # create HWR training partition from generated words
 create_train_partition(writer, synthesized_img_path)
@@ -39,3 +38,5 @@ create_train_partition(writer, synthesized_img_path)
 # train HWR with synthesized images of this writer
 labels_file = f'HWR_train_partitions/partition_{writer}'
 train_with_synth_imgs.train_and_test_with_synthesized_imgs(writer, n_generated_images, labels_file, synthesized_img_path)
+
+#TODO save model

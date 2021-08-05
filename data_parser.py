@@ -47,7 +47,7 @@ def parse_data(writer):
     with open(f'HWR_Groundtruth/gt_{writer}', 'w') as f:
         i = 0
         for index, image in images.iterrows():
-            tmp = image[0] + ',' + image[1] + ' ' + image[2] + '\n'
+            tmp = f'{image[0]}.png {image[2]}\n'
             f.write(tmp)
         f.close()
 

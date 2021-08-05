@@ -27,8 +27,6 @@ def writeLoss(loss_value, id, flag, n_synth_imgs):
         f.write('\n')
 
 
-
-
 def train(train_loader,seq2seq, opt, prediction_path, file_name, predict=True):
     
     seq2seq.train()
@@ -71,7 +69,6 @@ def test(test_loader, seq2seq, prediction_path, file_name):
 
     total_loss_t /= (num + 1)
     return total_loss_t
-
 
 
 def train_with_synth_imgs_from_input_folder(id, labels_file, image_folder):
@@ -131,10 +128,6 @@ def test_with_imgs_from_input_folder(labels_file, image_folder, model_path, pred
     print(f'{model_path}: {test_loss}')
 
 
-
-
-
-
 def train_and_test_with_synthesized_imgs(author, n_synth_imgs, labels_file, image_folder):
 
     prediction_path = 'pred_logs'
@@ -143,6 +136,7 @@ def train_and_test_with_synthesized_imgs(author, n_synth_imgs, labels_file, imag
     with open(labels_file, 'r') as f_tr:
         data = f_tr.readlines()
         file_labels = [i[:-1].split(' ') for i in data]
+
 
     data_set = IAM_words(file_labels, image_folder, augmentation=False)
     data_loader = torch.utils.data.DataLoader(data_set, collate_fn=sort_batch, batch_size=BATCH_SIZE, shuffle=False,
@@ -193,9 +187,6 @@ def get_test_loader(author):
     return data_loader
 
 
-
-
-
 def predict(model, author):
     encoder = Encoder(HIDDEN_SIZE_ENC, HEIGHT, WIDTH, Bi_GRU, CON_STEP, FLIP).cuda()
     decoder = Decoder(HIDDEN_SIZE_DEC, EMBEDDING_SIZE, vocab_size, Attention, TRADEOFF_CONTEXT_EMBED).cuda()
@@ -215,13 +206,3 @@ def calculate_cer(model, author):
     return float(cer)/100
 
 
-
-if __name__ == '__main__':
-    author = int(argv[1])
-    # author = 560
-    print(time.ctime())
-    # predict(model, author)
-    # cer = calculate_cer(model, author)
-    # print(cer)
-
-    # train_with_synthesized_imgs(author)
