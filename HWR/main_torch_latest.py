@@ -256,12 +256,12 @@ def test(test_loader, modelID, showAttn=True):
     writeLoss(total_loss_t, 'test')
     print('    TEST loss=%.3f, time=%.3f' % (total_loss_t, time.time()-start_t))
 
-def main(train_loader, valid_loader, test_loader):
+def main(train_loader, valid_loader, start_epoch):
     encoder = Encoder(HIDDEN_SIZE_ENC, HEIGHT, WIDTH, Bi_GRU, CON_STEP, FLIP).cuda()
     decoder = Decoder(HIDDEN_SIZE_DEC, EMBEDDING_SIZE, vocab_size, Attention, TRADEOFF_CONTEXT_EMBED).cuda()
     seq2seq = Seq2Seq(encoder, decoder, output_max_len, vocab_size).cuda()
-    if CurriculumModelID > 0:
-        model_file = 'save_weights/seq2seq-' + str(CurriculumModelID) +'.model'
+    if start_epoch > 0:
+        model_file = 'save_weights/seq2seq-' + str(start_epoch) + '.model'
         #model_file = 'save_weights/words/seq2seq-' + str(CurriculumModelID) +'.model'
         print('Loading ' + model_file)
         seq2seq.load_state_dict(torch.load(model_file)) #load
@@ -277,8 +277,8 @@ def main(train_loader, valid_loader, test_loader):
         min_loss_index = 0
         min_loss_count = 0
 
-    if CurriculumModelID > 0 and WORD_LEVEL:
-        start_epoch = CurriculumModelID + 1
+    if start_epoch > 0 and WORD_LEVEL:
+        start_epoch = start_epoch + 1
         for i in range(start_epoch):
             scheduler.step()
     else:
@@ -324,10 +324,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='seq2seq net', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('start_epoch', type=int, help='load saved weights from which epoch')
     args = parser.parse_args()
-    CurriculumModelID = args.start_epoch
     print(time.ctime())
     train_loader, valid_loader, test_loader = all_data_loader()
-    mejorModelID = main(train_loader, valid_loader, test_loader)
-    test(test_loader, mejorModelID, True)
-    os.system('./test.sh '+str(mejorModelID))
+    best_model_id = main(train_loader, valid_loader, args.start_epoch)
+    test(test_loader, best_model_id, True)
+    os.system('./test.sh ' + str(best_model_id))
     print(time.ctime())

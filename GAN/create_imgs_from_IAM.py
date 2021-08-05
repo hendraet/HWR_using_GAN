@@ -8,7 +8,7 @@ from .load_data import IMG_HEIGHT, IMG_WIDTH, NUM_WRITERS, letter2index,\
     tokens, num_tokens, OUTPUT_MAX_LEN, index2letter
 from .modules_tro import normalize
 import os
-import sys
+from pathlib import Path
 
 
 def read_image(img_name, img_folder):
@@ -20,14 +20,14 @@ def read_image(img_name, img_folder):
                      interpolation=cv2.INTER_CUBIC)  # INTER_AREA con error
     img = img / 255.  # 0-255 -> 0-1
 
-    img = 1. - img
+    reversed_img = 1. - img
     img_width = img.shape[-1]
 
     if img_width > IMG_WIDTH:
-        out_img = img[:, :IMG_WIDTH]
+        out_img = reversed_img[:, :IMG_WIDTH]
     else:
         out_img = np.zeros((IMG_HEIGHT, IMG_WIDTH), dtype='float32')
-        out_img[:, :img_width] = img
+        out_img[:, :img_width] = reversed_img
     out_img = out_img.astype('float32')
 
     mean = 0.5
@@ -113,14 +113,11 @@ def create_images_of_writer(writer_id, n_words, img_base, model):
     result_folder = f'synthesized_images/{writer_id}'
     target_file = f'train_images_names/style_of_{writer_id}'
 
-    if not os.path.exists(result_folder):
-        os.makedirs(result_folder)
-
-    with open(target_file, 'r') as _f:
-        data = _f.readlines()
-        data = [i.split(' ')[0] for i in data]
-    img_names = [i.split(',')[1] + '.png' for i in data]
-
+    Path(result_folder).mkdir(exist_ok=True)
+    with open(target_file, 'r') as f:
+        data = f.readlines()
+        data = [line.split(' ')[0] for line in data]
+    img_names = [line.split(',')[1] + '.png' for line in data]
     test_writer(img_names, model, n_words,  img_base, default_text_corpus, result_folder)
 
 
@@ -128,10 +125,7 @@ def create_images_from_input_folder(run_id, n_words, img_base, model):
 
     result_folder = f'synthesized_images/run/{run_id}'
 
-    if not os.path.exists(result_folder):
-        os.makedirs(result_folder)
-
-    file_names = [f for f in os.listdir(img_base)]
-
+    Path(result_folder).mkdir(exist_ok=True)
+    file_names = os.listdir(img_base)
     test_writer(file_names, model, n_words, img_base, default_text_corpus, result_folder)
 

@@ -5,10 +5,6 @@ import numpy as np
 
 
 from HWR import marcalAugmentor, datasetConfig
-# import .datasetConfig
-#import Augmentor
-#from torchsample.transforms import RangeNormalize
-#import torch
 
 WORD_LEVEL = True
 VGG_NORMAL = True
@@ -30,8 +26,6 @@ else:
 IMG_HEIGHT = 64
 #IMG_WIDTH = 256 # img_width < 256: padding   img_width > 256: resize to 256
 
-#global_filename = []
-#global_length = []
 def labelDictionary():
     labels = [' ', '!', '"', '#', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     letter2index = {label: n for n, label in enumerate(labels)}
