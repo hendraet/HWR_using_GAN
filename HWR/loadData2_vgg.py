@@ -1,9 +1,6 @@
 import torch.utils.data as D
 import cv2
 import numpy as np
-#from torchvision import transforms
-
-
 from HWR import marcalAugmentor, datasetConfig
 
 WORD_LEVEL = True
@@ -152,13 +149,6 @@ def loadData():
     with open(baseDir+gt_te, 'r') as f_te:
         data_te = f_te.readlines()
         file_label_te = [i[:-1].split(' ') for i in data_te]
-
-    #total_num_tr = len(file_label_tr)
-    #total_num_va = len(file_label_va)
-    #total_num_te = len(file_label_te)
-    #print('Loading training data ', total_num_tr)
-    #print('Loading validation data ', total_num_va)
-    #print('Loading testing data ', total_num_te)
 
     np.random.shuffle(file_label_tr)
     data_train = IAM_words(file_label_tr, augmentation=True)

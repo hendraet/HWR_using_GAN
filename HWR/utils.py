@@ -1,7 +1,7 @@
-import os
 import numpy as np
 import cv2
 import HWR.loadData2_vgg as loadData
+from pathlib import Path
 
 HEIGHT = loadData.IMG_HEIGHT
 WIDTH = loadData.IMG_WIDTH
@@ -16,9 +16,9 @@ WORD_LEVEL = loadData.WORD_LEVEL
 load_data_func = loadData.loadData
 
 def visualizeAttn(img, first_img_real_len, attn, epoch, count_n, name):
+
     folder_name = 'imgs'
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+    Path(folder_name).mkdir(parents=True, exist_ok=True)
     img = img[:, :first_img_real_len]
     img = img.cpu().numpy()
     img -= img.min()
@@ -37,26 +37,18 @@ def visualizeAttn(img, first_img_real_len, attn, epoch, count_n, name):
         output = np.flip(output, 1)
     cv2.imwrite(folder_name+'/'+name+'_'+str(epoch)+'.jpg', output)
 
-def writePredict(folder_name, file_name, index, pred): # [batch_size, vocab_size] * max_output_len
-    # folder_name = 'pred_logs'
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
-    # file_prefix = f'{folder_name}/.'
-    #if flag == 'train':
-    #    file_prefix = folder_name+'/train_predict_seq.'
-    #elif flag == 'valid':
-    #    file_prefix = folder_name+'/valid_predict_seq.'
-    #elif flag == 'test':
-    #    file_prefix = folder_name+'/test_predict_seq.'
 
-    pred = pred.data
-    pred2 = pred.topk(1)[1].squeeze(2) # (15, 32)
-    pred2 = pred2.transpose(0, 1) # (32, 15)
-    pred2 = pred2.cpu().numpy()
+def writePredict(result_folder, result_file, input_images, predictions): # [batch_size, vocab_size] * max_output_len
+
+    Path(result_folder).mkdir(parents=True, exist_ok=True)
+    predictions = predictions.data
+    top_predictions = predictions.topk(1)[1].squeeze(2) # (15, 32)
+    top_predictions = top_predictions.transpose(0, 1) # (32, 15)
+    top_predictions = top_predictions.cpu().numpy()
 
     batch_count_n = []
-    with open(f'{folder_name}/{file_name}.log', 'a') as f:
-        for n, seq in zip(index, pred2):
+    with open(f'{result_folder}/{result_file}.log', 'a') as f:
+        for n, seq in zip(input_images, top_predictions):
             f.write(n+' ')
             count_n = 0
             for i in seq:
@@ -75,10 +67,10 @@ def writePredict(folder_name, file_name, index, pred): # [batch_size, vocab_size
             f.write('\n')
     return batch_count_n
 
+
 def writeLoss(loss_value, flag):
     folder_name = 'pred_logs'
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+    Path(folder_name).mkdir(parents=True, exist_ok=True)
     if flag == 'train':
         file_name = folder_name + '/loss_train.log'
     elif flag == 'valid':

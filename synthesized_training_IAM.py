@@ -1,7 +1,7 @@
-import os
 import shutil
 import config
 import argparse
+from pathlib import Path
 
 from GAN import create_imgs_from_IAM
 from HWR import *
@@ -10,10 +10,12 @@ from HWR import train_with_synth_imgs
 from create_train_part import create_train_partition
 from data_parser import parse_data
 
-parser = argparse.ArgumentParser(description='create synthesized pics and train them.',
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('writer', type=int, help='add the id of a writer from the IAM Dataset.')
-parser.add_argument('n_generated_images', type=int,
+# TODO Merge into main script and add --iam flag
+parser = argparse.ArgumentParser(
+    description='Create synthesized images from the IAM dataset and train the HWR with them.',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('--writer', type=int, help='Specify which IAM writer should be trained.')
+parser.add_argument('--n-generated-images', type=int,
                     help='The number of images that the GAN will produce and the HWR train on.')
 args = parser.parse_args()
 
@@ -26,7 +28,7 @@ synthesized_img_path = f'synthesized_images/{writer}/'
 parse_data(writer)
 
 # delete old images
-if os.path.isdir(synthesized_img_path):
+if Path(synthesized_img_path).exists():
     shutil.rmtree(synthesized_img_path)
 
 # create images
