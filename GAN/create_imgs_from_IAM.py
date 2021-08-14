@@ -11,9 +11,9 @@ import os
 from pathlib import Path
 
 
-def read_image(img_name, img_folder):
-    url = img_folder + img_name
-    img = cv2.imread(url, 0)
+def read_image(img_path):
+
+    img = cv2.imread(img_path, 0)
 
     rate = float(IMG_HEIGHT) / img.shape[0]
     img = cv2.resize(img, (int(img.shape[1] * rate) + 1, IMG_HEIGHT),
@@ -53,7 +53,7 @@ def test_writer(img_names, model_file, n_words, img_folder, text_corpus, result_
     gpu = torch.device('cuda')
 
     '''data preparation'''
-    imgs = [read_image(i, img_folder) for i in img_names]
+    imgs = [read_image(img_folder + img_name) for img_name in img_names]
     random.shuffle(imgs)
     final_imgs = imgs[:50]
     if len(final_imgs) < 50:

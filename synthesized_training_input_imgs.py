@@ -2,12 +2,13 @@ import sys
 import config
 from create_train_part import create_train_partition_for_run
 from GAN.create_imgs_from_IAM import create_images_from_input_folder
+from HWR.train_with_synth_imgs import train_with_synth_imgs_from_input_folder, test_with_imgs_from_input_folder
 import argparse
+from os import listdir
 
 # TODO remove this
-sys.path.append('./HWR')
-from os import listdir
-from HWR.train_with_synth_imgs import train_with_synth_imgs_from_input_folder, test_with_imgs_from_input_folder
+# Hope it works without this
+# sys.path.append('./HWR')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create synthesized images from input images and train HWR with them.')
@@ -16,7 +17,6 @@ if __name__ == '__main__':
     parser.add_argument('--model-id', default=3050, type=int, help='Model filename for GAN')
     args = parser.parse_args()
 
-    n_generated_images = args.n_generated_images
     # TODO Move paths to yaml file
     synthesized_img_folder = 'synthesized_images/run'
     hwr_training_folder = 'HWR_train_partitions/run_partitions'
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     # Synthesized images are saved in respective run_id folder.
     # Then, corresponding partition file for the HWR is created.
     # TODO: In yaml specified HWR model ist used for training of new writer.
-    create_images_from_input_folder(run_id, n_generated_images, 'washington_input/', model)
+    create_images_from_input_folder(run_id, args.n_generated_images, 'washington_input/', model)
     create_train_partition_for_run(run_id, f'{synthesized_img_folder}/{run_id}')
     train_with_synth_imgs_from_input_folder(run_id, labels_file, f'{synthesized_img_folder}/{run_id}/')
 

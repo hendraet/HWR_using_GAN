@@ -1,10 +1,7 @@
-from sys import argv
 from .main_torch_latest import BATCH_SIZE, sort_batch, HIDDEN_SIZE_DEC, HIDDEN_SIZE_ENC, EMBEDDING_SIZE, \
     TRADEOFF_CONTEXT_EMBED, Bi_GRU, CON_STEP, crit, learning_rate, lr_milestone, lr_gamma
-import subprocess as sub
 from .loadData2_vgg import IAM_words
 from .utils import writePredict, HEIGHT, WIDTH, output_max_len, vocab_size, FLIP
-import time
 import torch
 from torch import optim
 from .models.encoder_vgg import Encoder
@@ -12,10 +9,11 @@ from .models.decoder import Decoder
 from .models.attention import locationAttention as Attention
 from .models.seq2seq import Seq2Seq
 import os
+from pathlib import Path
 import config
 
+# TODO Move this to config/args
 EPOCH = 1
-log_softmax = torch.nn.LogSoftmax(dim=-1)
 
 
 def init_s2s_model(model_file=config.hwr_default_model):
@@ -28,19 +26,19 @@ def init_s2s_model(model_file=config.hwr_default_model):
 
 
 # TODO From utils
-def write_loss(loss_value, id, flag, n_synth_imgs):
-    folder_name = 'results/'
-    file_name = folder_name + f'/{id}/{n_synth_imgs}_imgs_{flag}_loss'
+def write_loss(loss_value, wid, flag, n_synth_imgs, folder_name='results'):
+    # TODO Move hard-coded path
+    file_name = Path(folder_name, wid, f'{n_synth_imgs}_imgs_{flag}_loss')
     if not os.path.exists(os.path.dirname(file_name)):
         os.makedirs(os.path.dirname(file_name))
     with open(file_name, 'a') as f:
-        f.write(str(loss_value))
-        f.write('\n')
+        f.write(f'{str(loss_value)} \n')
 
 
 def calc_loss(output, labels):
     test_label = labels.permute(1, 0)[1:].contiguous().view(-1)  # remove<GO>
     output_label = output.view(-1, vocab_size)  # remove last <EOS>
+    log_softmax = torch.nn.LogSoftmax(dim=-1)
     loss = crit(log_softmax(output_label), test_label)
     return loss
 
@@ -51,7 +49,7 @@ def train(train_loader, seq2seq, opt, prediction_path=None, file_name=None):
     for num, (train_index, train_in, train_in_len, train_out) in enumerate(train_loader):
         train_in, train_out = train_in.cuda(), train_out.cuda()
         output, attention_weights = seq2seq(train_in, train_out, train_in_len,
-                                            teacher_rate=0,train=True)  # (100-1, 32, 62+1)
+                                            teacher_rate=0, train=True)  # (100-1, 32, 62+1)
 
         if prediction_path and file_name:
             writePredict(prediction_path, file_name, train_index, output)
@@ -90,7 +88,7 @@ def train_with_synth_imgs_from_input_folder(model_id, labels_file, image_folder)
 
     for epoch in range(EPOCH):
         scheduler.step()
-        train_loss = train(data_loader, seq2seq, opt, "", "", False)
+        train_loss = train(data_loader, seq2seq, opt)
         print(f'epoch: {epoch + 1} train_loss: {train_loss}')
 
     folder_weights = f'final_weights_HWR/{model_id}/'
