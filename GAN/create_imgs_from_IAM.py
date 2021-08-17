@@ -9,6 +9,11 @@ from .load_data import IMG_HEIGHT, IMG_WIDTH, NUM_WRITERS, letter2index,\
 from .modules_tro import normalize
 import os
 from pathlib import Path
+import yaml
+
+
+with open('config.yaml') as f:
+    config = yaml.safe_load(f)
 
 
 def read_image(img_path):
@@ -49,7 +54,7 @@ def label_padding(labels, num_tokens):
     return ll
 
 
-def test_writer(img_names, model_file, n_words, img_folder, text_corpus, result_folder):
+def create_images(img_names, model_file, n_words, img_folder, result_folder):
     gpu = torch.device('cuda')
 
     '''data preparation'''
@@ -63,7 +68,7 @@ def test_writer(img_names, model_file, n_words, img_folder, text_corpus, result_
 
     imgs = torch.from_numpy(np.array(final_imgs)).unsqueeze(0).to(gpu) # 1,50,64,216
 
-    with open(text_corpus, 'r') as _f:
+    with open(config['text_corpus'], 'r') as _f:
         texts = _f.read().split()
         texts = texts[0:n_words]
     labels = torch.from_numpy(np.array([np.array(label_padding(label, num_tokens)) for label in texts])).to(gpu)
@@ -105,9 +110,6 @@ def test_writer(img_names, model_file, n_words, img_folder, text_corpus, result_
                     xg
 
 
-default_text_corpus = 'GAN/corpora_english/brown-azAZ.tr'
-
-
 def create_images_of_writer(writer_id, n_words, img_base, model):
 
     result_folder = f'synthesized_images/{writer_id}'
@@ -118,7 +120,7 @@ def create_images_of_writer(writer_id, n_words, img_base, model):
         data = f.readlines()
         data = [line.split(' ')[0] for line in data]
     img_names = [line.split(',')[1] + '.png' for line in data]
-    test_writer(img_names, model, n_words,  img_base, default_text_corpus, result_folder)
+    create_images(img_names, model, n_words, img_base, result_folder)
 
 
 def create_images_from_input_folder(run_id, n_words, img_base, model):
@@ -127,5 +129,5 @@ def create_images_from_input_folder(run_id, n_words, img_base, model):
 
     Path(result_folder).mkdir(exist_ok=True)
     file_names = os.listdir(img_base)
-    test_writer(file_names, model, n_words, img_base, default_text_corpus, result_folder)
+    create_images(file_names, model, n_words, img_base, result_folder)
 

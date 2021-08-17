@@ -1,5 +1,3 @@
-import sys
-import config
 from create_train_part import create_train_partition_for_run
 from GAN.create_imgs_from_IAM import create_images_from_input_folder
 from HWR.train_with_synth_imgs import train_with_synth_imgs_from_input_folder, test_with_imgs_from_input_folder
@@ -7,8 +5,6 @@ import argparse
 from os import listdir
 
 # TODO remove this
-# Hope it works without this
-# sys.path.append('./HWR')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create synthesized images from input images and train HWR with them.')

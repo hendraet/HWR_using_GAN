@@ -1,10 +1,12 @@
-# TODO Move hard-coded paths
+import yaml
+
+with open('config.yaml') as f:
+    config = yaml.safe_load(f)
 
 
 def parse_data(writer):
-
     image_files, labels = [], []
-    with open('data/img_writer_mapping.txt', 'r') as writer_mapping:
+    with open(config['iam_writer_mappings'], 'r') as writer_mapping:
         for line in writer_mapping.readlines():
             if line.split(',')[0] == writer:
                 labels.append(" ".join(line.split(' ')[1:]))

@@ -8,15 +8,16 @@ from .models.encoder_vgg import Encoder
 from .models.decoder import Decoder
 from .models.attention import locationAttention as Attention
 from .models.seq2seq import Seq2Seq
-import os
 from pathlib import Path
-import config
+import yaml
 
-# TODO Move this to config/args
-EPOCH = 1
+with open('config.yaml') as f:
+    config = yaml.safe_load(f)
+
+EPOCH = int(config['number_training_epochs'])
 
 
-def init_s2s_model(model_file=config.hwr_default_model):
+def init_s2s_model(model_file=config['hwr_default_model']):
     encoder = Encoder(HIDDEN_SIZE_ENC, HEIGHT, WIDTH, Bi_GRU, CON_STEP, FLIP).cuda()
     decoder = Decoder(HIDDEN_SIZE_DEC, EMBEDDING_SIZE, vocab_size, Attention, TRADEOFF_CONTEXT_EMBED).cuda()
     seq2seq = Seq2Seq(encoder, decoder, output_max_len, vocab_size).cuda()
@@ -29,8 +30,7 @@ def init_s2s_model(model_file=config.hwr_default_model):
 def write_loss(loss_value, wid, flag, n_synth_imgs, folder_name='results'):
     # TODO Move hard-coded path
     file_name = Path(folder_name, wid, f'{n_synth_imgs}_imgs_{flag}_loss')
-    if not os.path.exists(os.path.dirname(file_name)):
-        os.makedirs(os.path.dirname(file_name))
+    file_name.parent.mkdir(parents=True, exist_ok=True)
     with open(file_name, 'a') as f:
         f.write(f'{str(loss_value)} \n')
 
@@ -92,8 +92,7 @@ def train_with_synth_imgs_from_input_folder(model_id, labels_file, image_folder)
         print(f'epoch: {epoch + 1} train_loss: {train_loss}')
 
     folder_weights = f'final_weights_HWR/{model_id}/'
-    if not os.path.exists(folder_weights):
-        os.makedirs(folder_weights)
+    Path(folder_weights).mkdir(parents=True, exist_ok=True)
     torch.save(seq2seq.state_dict(), f'{folder_weights}/seq2seq-{model_id}.model')
     print(f'Trained model saved as {model_id}.')
 
@@ -101,7 +100,6 @@ def train_with_synth_imgs_from_input_folder(model_id, labels_file, image_folder)
 def test_with_imgs_from_input_folder(labels_file, image_folder, model_path, prediction_file_prefix):
     # TODO Move hard-coded path
     prediction_path = 'pred_logs'
-    # prediction_file_prefix = f'id_{id}_'
 
     test_loader = get_test_loader(labels_file, image_folder)
     seq2seq = init_s2s_model(model_path)
@@ -118,9 +116,6 @@ def train_and_test_with_synthesized_imgs(author, n_synth_imgs, labels_file, imag
     seq2seq = init_s2s_model()
     opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
     scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
-
-    # for i in range(EPOCH +1):
-    #     scheduler.step()
 
     test_loader = get_test_loader(f'HWR_Groundtruth/gt_{author}')
     start_epoch = 0
@@ -142,7 +137,6 @@ def train_and_test_with_synthesized_imgs(author, n_synth_imgs, labels_file, imag
 
 # TODO Move hard-coded path
 def get_test_loader(filename, image_folder=None):
-    # base_dir = 'parser/'
 
     with open(filename, 'r') as f_tr:
         data = f_tr.readlines()
