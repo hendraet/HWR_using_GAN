@@ -1,4 +1,5 @@
 import yaml
+from os import listdir
 
 with open('config.yaml') as f:
     config = yaml.safe_load(f)
@@ -23,3 +24,12 @@ def parse_data(writer):
         for image_file, label in zip(image_files, labels):
             line = f'{image_file}.png {label}'
             f.write(line)
+
+
+def create_writer_id(synthesized_img_folder):
+    file_names = [int(folder) for folder in listdir(synthesized_img_folder)]
+    if not len(file_names) == 0:
+        run_id = max(file_names) + 1
+    else:
+        run_id = 1
+    return run_id

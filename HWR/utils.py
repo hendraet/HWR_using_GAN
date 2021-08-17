@@ -11,7 +11,6 @@ num_tokens = loadData.num_tokens
 vocab_size = loadData.num_classes + num_tokens
 index2letter = loadData.index2letter
 FLIP = loadData.FLIP
-WORD_LEVEL = loadData.WORD_LEVEL
 
 load_data_func = loadData.loadData
 

@@ -81,7 +81,7 @@ def test(test_loader, seq2seq, prediction_path, file_name):
 
 
 def train_with_synth_imgs_from_input_folder(model_id, labels_file, image_folder):
-    data_loader = get_test_loader(labels_file, image_folder)
+    data_loader = get_data_loader(labels_file, image_folder)
     seq2seq = init_s2s_model()
     opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
     scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
@@ -101,44 +101,49 @@ def test_with_imgs_from_input_folder(labels_file, image_folder, model_path, pred
     # TODO Move hard-coded path
     prediction_path = 'pred_logs'
 
-    test_loader = get_test_loader(labels_file, image_folder)
+    test_loader = get_data_loader(labels_file, image_folder)
     seq2seq = init_s2s_model(model_path)
     test_loss = test(test_loader, seq2seq, prediction_path, f'{prediction_file_prefix}test_predict_seq')
     print(f'Test loss of {model_path}: {test_loss}')
 
 
-def train_and_test_with_synthesized_imgs(author, n_synth_imgs, labels_file, image_folder):
+def train_and_test_with_synthesized_imgs(writer, n_synth_imgs, labels_file, image_folder, test_run=True):
     # TODO Move hard-coded path
     prediction_path = 'pred_logs'
-    prediction_file_prefix = f'author_{author}_'
+    prediction_file_prefix = f'author_{writer}_'
 
-    data_loader = get_test_loader(labels_file, image_folder)
+    train_loader = get_data_loader(labels_file, image_folder)
     seq2seq = init_s2s_model()
     opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
     scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
 
-    test_loader = get_test_loader(f'HWR_Groundtruth/gt_{author}')
-    start_epoch = 0
+    if test_run:
+        test_loader = get_data_loader(f'HWR_Groundtruth/gt_{writer}')
+        start_epoch = 0
 
-    test_loss = test(test_loader, seq2seq, prediction_path, f'{prediction_file_prefix}test_predict_seq.{start_epoch}')
-    print(f'epoch: {start_epoch} test_loss: {test_loss}')
-    write_loss(test_loss, author, 'test', n_synth_imgs)
+        test_loss = test(test_loader, seq2seq, prediction_path,
+                         f'{prediction_file_prefix}test_predict_seq.{start_epoch}')
+        print(f'epoch: {start_epoch} test_loss: {test_loss}')
+        write_loss(test_loss, writer, 'test', n_synth_imgs)
 
     for epoch in range(EPOCH):
         scheduler.step()
-        train_loss = train(data_loader, seq2seq, opt, prediction_path,
+        train_loss = train(train_loader, seq2seq, opt, prediction_path,
                            f'{prediction_file_prefix}train_predict_seq.{epoch + 1}')
         print(f'epoch: {epoch + 1} train_loss: {train_loss}')
-        write_loss(train_loss, author, 'train', n_synth_imgs)
-        test_loss = test(test_loader, seq2seq, prediction_path, f'{prediction_file_prefix}test_predict_seq.{epoch + 1}')
-        print(f'epoch: {epoch + 1} test_loss: {test_loss}')
-        write_loss(test_loss, author, 'test', n_synth_imgs)
+        write_loss(train_loss, writer, 'train', n_synth_imgs)
+
+        if test_run:
+            test_loss = test(test_loader, seq2seq, prediction_path,
+                             f'{prediction_file_prefix}test_predict_seq.{epoch + 1}')
+            print(f'epoch: {epoch + 1} test_loss: {test_loss}')
+            write_loss(test_loss, writer, 'test', n_synth_imgs)
 
 
 # TODO Move hard-coded path
-def get_test_loader(filename, image_folder=None):
+def get_data_loader(labels_file, image_folder=None):
 
-    with open(filename, 'r') as f_tr:
+    with open(labels_file, 'r') as f_tr:
         data = f_tr.readlines()
         file_labels = [i[:-1].split(' ') for i in data]
 
@@ -156,4 +161,4 @@ def predict(model, author):
     model_file = 'save_weights/seq2seq-' + str(model) + '.model'
     seq2seq = init_s2s_model(model_file)
     # print('Loading ' + model_file)
-    test(get_test_loader(author), seq2seq, model, author)
+    test(get_data_loader(author), seq2seq, model, author)

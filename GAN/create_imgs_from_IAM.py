@@ -110,24 +110,18 @@ def create_images(img_names, model_file, n_words, img_folder, result_folder):
                     xg
 
 
-def create_images_of_writer(writer_id, n_words, img_base, model):
+def create_images_from_source(writer_id, n_words, img_base, model, dataset_name='runs'):
+    result_folder = Path(config['result_paths']['synthesized_images'], dataset_name, str(writer_id))
 
-    result_folder = f'synthesized_images/{writer_id}'
-    target_file = f'train_images_names/style_of_{writer_id}'
+    if dataset_name == 'iam':
+        target_file = Path(config['result_paths']['sample_partitions'], f'style_of_{writer_id}')
+        with open(target_file, 'r') as f:
+            data = f.readlines()
+            data = [line.split(' ')[0] for line in data]
+        img_names = [line.split(',')[1] + '.png' for line in data]
+    else:
+        img_names = os.listdir(img_base)
 
-    Path(result_folder).mkdir(exist_ok=True)
-    with open(target_file, 'r') as f:
-        data = f.readlines()
-        data = [line.split(' ')[0] for line in data]
-    img_names = [line.split(',')[1] + '.png' for line in data]
+    result_folder.mkdir(parents=True, exist_ok=True)
     create_images(img_names, model, n_words, img_base, result_folder)
-
-
-def create_images_from_input_folder(run_id, n_words, img_base, model):
-
-    result_folder = f'synthesized_images/run/{run_id}'
-
-    Path(result_folder).mkdir(exist_ok=True)
-    file_names = os.listdir(img_base)
-    create_images(file_names, model, n_words, img_base, result_folder)
 

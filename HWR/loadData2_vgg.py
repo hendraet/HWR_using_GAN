@@ -1,25 +1,20 @@
 import torch.utils.data as D
 import cv2
+import yaml
 import numpy as np
-from HWR import marcalAugmentor, datasetConfig
+from pathlib import Path
 
-WORD_LEVEL = True
-VGG_NORMAL = True
-# train data: 46945
-# valid data: 6445
-# test data: 13752
+from HWR import marcalAugmentor
+
+with open('config.yaml') as f:
+    config = yaml.safe_load(f)
 
 RM_BACKGROUND = False
 FLIP = False # flip the image
 #BATCH_SIZE = 64
-if WORD_LEVEL:
-    OUTPUT_MAX_LEN = 23 # max-word length is 21  This value should be larger than 21+2 (<GO>+groundtruth+<END>)
-    IMG_WIDTH = 1011 # m01-084-07-00 max_length
-    baseDir = datasetConfig.baseDir_word
-else:
-    OUTPUT_MAX_LEN = 95 # line-level
-    IMG_WIDTH = 2227 # m03-118-05.png max_length
-    baseDir = datasetConfig.baseDir_line
+
+OUTPUT_MAX_LEN = 23 # max-word length is 21  This value should be larger than 21+2 (<GO>+groundtruth+<END>)
+IMG_WIDTH = 1011 # m01-084-07-00 max_length
 IMG_HEIGHT = 64
 #IMG_WIDTH = 256 # img_width < 256: padding   img_width > 256: resize to 256
 
@@ -34,7 +29,7 @@ tokens = {'GO_TOKEN': 0, 'END_TOKEN': 1, 'PAD_TOKEN': 2}
 num_tokens = len(tokens.keys())
 
 class IAM_words(D.Dataset):
-    def __init__(self, file_label, image_dir=datasetConfig.baseDir_word, augmentation=True):
+    def __init__(self, file_label, image_dir=Path(config['data_dir']), augmentation=True):
         self.file_label = file_label
         self.output_max_len = OUTPUT_MAX_LEN
         self.augmentation = augmentation
@@ -56,10 +51,10 @@ class IAM_words(D.Dataset):
         if RM_BACKGROUND:
             file_name, thresh = file_name.split(',')
             thresh = int(thresh)
-        url = self.image_dir + file_name
-        img = cv2.imread(url, 0)
+        url = self.image_dir / file_name
+        img = cv2.imread(str(url), 0)
         if img is None:
-            print('###!Cannot find image: ' + url)
+            print('###!Cannot find image: ' + str(url))
         if RM_BACKGROUND:
             img[img>thresh] = 255
         #img = 255 - img
@@ -93,16 +88,13 @@ class IAM_words(D.Dataset):
             outImg[:, :img_width] = img
         outImg = outImg/255. #float64
         outImg = outImg.astype('float32')
-        if VGG_NORMAL:
-            mean = [0.485, 0.456, 0.406]
-            std = [0.229, 0.224, 0.225]
-            outImgFinal = np.zeros([3, *outImg.shape])
-            for i in range(3):
-                outImgFinal[i] = (outImg - mean[i]) / std[i]
-            return outImgFinal, img_width
+        mean = [0.485, 0.456, 0.406]
+        std = [0.229, 0.224, 0.225]
+        outImgFinal = np.zeros([3, *outImg.shape])
+        for i in range(3):
+            outImgFinal[i] = (outImg - mean[i]) / std[i]
+        return outImgFinal, img_width
 
-        outImg = np.vstack([np.expand_dims(outImg, 0)] * 3) # GRAY->RGB
-        return outImg, img_width
 
     def label_padding(self, labels, num_tokens):
         new_label_len = []
@@ -124,10 +116,8 @@ class IAM_words(D.Dataset):
         return ll, make_weights(new_label_len, self.output_max_len)
 
 def loadData():
-    if WORD_LEVEL:
-        subname = 'word'
-    else:
-        subname = 'line'
+
+    subname = 'line'
     if RM_BACKGROUND:
         gt_tr = 'RWTH.iam_'+subname+'_gt_final.train.thresh'
         gt_va = 'RWTH.iam_'+subname+'_gt_final.valid.thresh'
@@ -156,39 +146,4 @@ def loadData():
     data_test = IAM_words(file_label_te, augmentation=False)
     return data_train, data_valid, data_test
 
-if __name__ == '__main__':
-    import time
-    start = time.time()
-    SHOW_IMG = False
 
-    imgName = 'p03-080-05'
-    # subdic = 'lines/'
-    if SHOW_IMG:
-        img = cv2.imread(baseDir+imgName+'.png', 0)
-        data = IAM_words(None, augmentation=True)
-        out_imgs = [data.readImage_keepRatio(imgName.split('.')[0]+',167', False)[0] for i in range(20)]
-
-        rate = float(IMG_WIDTH) / out_imgs[0].shape[1]
-        img = cv2.resize(img, (IMG_WIDTH, int(img.shape[0]*rate)), interpolation=cv2.INTER_AREA)
-        outImg = img / 255
-        final_img = np.vstack((outImg, *out_imgs))
-        rate = 800 / final_img.shape[0]
-        final_img2 = cv2.resize(final_img, (int(final_img.shape[1]*rate), 800), interpolation=cv2.INTER_AREA)
-        cv2.imshow('Augmentor', final_img2)
-        cv2.waitKey(0)
-
-    else:
-        data_train, data_valid, data_test = loadData()
-        MAX_WIDTH = 500
-        for i in range(len(data_train)):
-            idx, img, width, label = data_train[i]
-            if width > MAX_WIDTH:
-                print('Width: ', width, 'Index:', idx)
-        for i in range(len(data_valid)):
-            idx, img, width, label = data_valid[i]
-            if width > MAX_WIDTH:
-                print('Width: ', width, 'Index:', idx)
-        for i in range(len(data_test)):
-            idx, img, width, label = data_test[i]
-            if width > MAX_WIDTH:
-                print('Width: ', width, 'Index:', idx)

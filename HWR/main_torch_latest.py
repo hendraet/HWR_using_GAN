@@ -20,7 +20,7 @@ from .models.decoder import Decoder
 from .models.attention import locationAttention as Attention
 #from models.attention import TroAttention as Attention
 from .models.seq2seq import Seq2Seq
-from .utils import visualizeAttn, writePredict, writeLoss, HEIGHT, WIDTH, output_max_len, vocab_size, FLIP, WORD_LEVEL, load_data_func, tokens
+from .utils import visualizeAttn, writePredict, writeLoss, HEIGHT, WIDTH, output_max_len, vocab_size, FLIP, load_data_func, tokens
 
 #torch.cuda.set_device(1)
 
@@ -277,7 +277,7 @@ def main(train_loader, valid_loader, start_epoch):
         min_loss_index = 0
         min_loss_count = 0
 
-    if start_epoch > 0 and WORD_LEVEL:
+    if start_epoch > 0:
         start_epoch = start_epoch + 1
         for i in range(start_epoch):
             scheduler.step()
