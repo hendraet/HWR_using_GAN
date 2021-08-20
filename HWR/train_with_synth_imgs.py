@@ -27,12 +27,11 @@ def init_s2s_model(model_file=config['hwr_default_model']):
 
 
 # TODO From utils
-def write_loss(loss_value, wid, flag, n_synth_imgs, folder_name='results'):
-    # TODO Move hard-coded path
+def write_loss(loss_value, wid, flag, n_synth_imgs, folder_name=config['result_paths']['evaluations']):
     file_name = Path(folder_name, wid, f'{n_synth_imgs}_imgs_{flag}_loss')
     file_name.parent.mkdir(parents=True, exist_ok=True)
     with open(file_name, 'a') as f:
-        f.write(f'{str(loss_value)} \n')
+        f.write(f'{str(loss_value)}\n')
 
 
 def calc_loss(output, labels):
@@ -80,7 +79,7 @@ def test(test_loader, seq2seq, prediction_path, file_name):
     return total_loss
 
 
-def train_with_synth_imgs_from_input_folder(model_id, labels_file, image_folder):
+def train_with_synth_imgs_from_input_folder(run_id, labels_file, image_folder):
     data_loader = get_data_loader(labels_file, image_folder)
     seq2seq = init_s2s_model()
     opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
@@ -91,25 +90,22 @@ def train_with_synth_imgs_from_input_folder(model_id, labels_file, image_folder)
         train_loss = train(data_loader, seq2seq, opt)
         print(f'epoch: {epoch + 1} train_loss: {train_loss}')
 
-    folder_weights = f'final_weights_HWR/{model_id}/'
-    Path(folder_weights).mkdir(parents=True, exist_ok=True)
-    torch.save(seq2seq.state_dict(), f'{folder_weights}/seq2seq-{model_id}.model')
-    print(f'Trained model saved as {model_id}.')
+    model_path = Path(config['result_paths']['model_weights'], 'runs', f'{run_id}.model')
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(seq2seq.state_dict(), model_path)
+    print(f'Trained model saved as {model_path}')
+    return model_path
 
 
 def test_with_imgs_from_input_folder(labels_file, image_folder, model_path, prediction_file_prefix):
-    # TODO Move hard-coded path
-    prediction_path = 'pred_logs'
-
     test_loader = get_data_loader(labels_file, image_folder)
     seq2seq = init_s2s_model(model_path)
-    test_loss = test(test_loader, seq2seq, prediction_path, f'{prediction_file_prefix}test_predict_seq')
+    test_loss = test(test_loader, seq2seq, config['result_paths']['evaluations'], f'{prediction_file_prefix}test_predict_seq')
     print(f'Test loss of {model_path}: {test_loss}')
 
 
 def train_and_test_with_synthesized_imgs(writer, n_synth_imgs, labels_file, image_folder, test_run=True):
-    # TODO Move hard-coded path
-    prediction_path = 'pred_logs'
+    evaluations_path = config['result_paths']['evaluations']
     prediction_file_prefix = f'author_{writer}_'
 
     train_loader = get_data_loader(labels_file, image_folder)
@@ -118,31 +114,29 @@ def train_and_test_with_synthesized_imgs(writer, n_synth_imgs, labels_file, imag
     scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
 
     if test_run:
-        test_loader = get_data_loader(f'HWR_Groundtruth/gt_{writer}')
+        test_loader = get_data_loader(config['result_paths']['labels_path'] + f'gt_{writer}')
         start_epoch = 0
 
-        test_loss = test(test_loader, seq2seq, prediction_path,
+        test_loss = test(test_loader, seq2seq, evaluations_path,
                          f'{prediction_file_prefix}test_predict_seq.{start_epoch}')
         print(f'epoch: {start_epoch} test_loss: {test_loss}')
         write_loss(test_loss, writer, 'test', n_synth_imgs)
 
     for epoch in range(EPOCH):
         scheduler.step()
-        train_loss = train(train_loader, seq2seq, opt, prediction_path,
+        train_loss = train(train_loader, seq2seq, opt, evaluations_path,
                            f'{prediction_file_prefix}train_predict_seq.{epoch + 1}')
         print(f'epoch: {epoch + 1} train_loss: {train_loss}')
         write_loss(train_loss, writer, 'train', n_synth_imgs)
 
         if test_run:
-            test_loss = test(test_loader, seq2seq, prediction_path,
+            test_loss = test(test_loader, seq2seq, evaluations_path,
                              f'{prediction_file_prefix}test_predict_seq.{epoch + 1}')
             print(f'epoch: {epoch + 1} test_loss: {test_loss}')
             write_loss(test_loss, writer, 'test', n_synth_imgs)
 
 
-# TODO Move hard-coded path
 def get_data_loader(labels_file, image_folder=None):
-
     with open(labels_file, 'r') as f_tr:
         data = f_tr.readlines()
         file_labels = [i[:-1].split(' ') for i in data]
@@ -154,11 +148,3 @@ def get_data_loader(labels_file, image_folder=None):
     data_loader = torch.utils.data.DataLoader(data_set, collate_fn=sort_batch, batch_size=BATCH_SIZE, shuffle=False,
                                               num_workers=0, pin_memory=True)
     return data_loader
-
-
-# TODO Remove if unused, else move hard-coded path
-def predict(model, author):
-    model_file = 'save_weights/seq2seq-' + str(model) + '.model'
-    seq2seq = init_s2s_model(model_file)
-    # print('Loading ' + model_file)
-    test(get_data_loader(author), seq2seq, model, author)

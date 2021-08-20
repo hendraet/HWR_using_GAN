@@ -114,7 +114,7 @@ def create_images_from_source(writer_id, n_words, img_base, model, dataset_name=
     result_folder = Path(config['result_paths']['synthesized_images'], dataset_name, str(writer_id))
 
     if dataset_name == 'iam':
-        target_file = Path(config['result_paths']['sample_partitions'], f'style_of_{writer_id}')
+        target_file = Path(config['result_paths']['labels_path'], f'style_of_{writer_id}')
         with open(target_file, 'r') as f:
             data = f.readlines()
             data = [line.split(' ')[0] for line in data]

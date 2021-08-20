@@ -5,7 +5,7 @@ number_training_epochs: 1
 iam_writer_mappings: data/img_writer_mapping.txt
 result_paths:
   synthesized_images: synthesized_images/
-  sample_partitions: train_images_names/
   labels_path: label_files/
-  models:
+  model_weights: model_weights/
+  evaluations: evaluations/
 text_corpus: GAN/corpora_english/brown-azAZ.tr
