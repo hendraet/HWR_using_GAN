@@ -86,8 +86,8 @@ def train_with_synth_imgs_from_input_folder(run_id, labels_file, image_folder):
     scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
 
     for epoch in range(EPOCH):
-        scheduler.step()
         train_loss = train(data_loader, seq2seq, opt)
+        scheduler.step()
         print(f'epoch: {epoch + 1} train_loss: {train_loss}')
 
     model_path = Path(config['result_paths']['model_weights'], 'runs', f'{run_id}.model')
@@ -123,9 +123,9 @@ def train_and_test_with_synthesized_imgs(writer, n_synth_imgs, labels_file, imag
         write_loss(test_loss, writer, 'test', n_synth_imgs)
 
     for epoch in range(EPOCH):
-        scheduler.step()
         train_loss = train(train_loader, seq2seq, opt, evaluations_path,
                            f'{prediction_file_prefix}train_predict_seq.{epoch + 1}')
+        scheduler.step()
         print(f'epoch: {epoch + 1} train_loss: {train_loss}')
         write_loss(train_loss, writer, 'train', n_synth_imgs)
 

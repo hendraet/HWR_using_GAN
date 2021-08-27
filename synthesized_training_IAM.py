@@ -2,7 +2,7 @@ import shutil
 import yaml
 import argparse
 from pathlib import Path
-from GAN.create_imgs_from_IAM import create_images_from_source
+from GAN.create_imgs import create_images_from_source
 from HWR.train_with_synth_imgs import train_and_test_with_synthesized_imgs
 from create_train_part import create_train_partition
 from data_parser import parse_data

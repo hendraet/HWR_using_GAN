@@ -1,5 +1,5 @@
 from create_train_part import create_train_partition
-from GAN.create_imgs_from_IAM import create_images_from_source
+from GAN.create_imgs import create_images_from_source
 from HWR.train_with_synth_imgs import train_with_synth_imgs_from_input_folder, test_with_imgs_from_input_folder
 from pathlib import Path
 import argparse
