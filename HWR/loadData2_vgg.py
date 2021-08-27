@@ -29,7 +29,7 @@ tokens = {'GO_TOKEN': 0, 'END_TOKEN': 1, 'PAD_TOKEN': 2}
 num_tokens = len(tokens.keys())
 
 class IAM_words(D.Dataset):
-    def __init__(self, file_label, image_dir=Path(config['data_dir']), augmentation=True):
+    def __init__(self, file_label, image_dir=Path(config['iam_words']), augmentation=True):
         self.file_label = file_label
         self.output_max_len = OUTPUT_MAX_LEN
         self.augmentation = augmentation

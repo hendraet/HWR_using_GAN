@@ -79,61 +79,34 @@ def test(test_loader, seq2seq, prediction_path, file_name):
     return total_loss
 
 
-def train_with_synth_imgs_from_input_folder(run_id, labels_file, image_folder):
-    data_loader = get_data_loader(labels_file, image_folder)
+def train_with_synth_imgs(run_or_writer_id, labels_file, image_folder, iam=False):
+    train_loader = get_data_loader(labels_file, image_folder)
     seq2seq = init_s2s_model()
     opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
     scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
 
     for epoch in range(EPOCH):
-        train_loss = train(data_loader, seq2seq, opt)
+        if iam:
+            train_loss = train(train_loader, seq2seq, opt, config['result_paths']['evaluations'],
+                               f'writer_{run_or_writer_id}_train_predict_seq.{epoch + 1}')
+        else:
+            train_loss = train(train_loader, seq2seq, opt)
         scheduler.step()
         print(f'epoch: {epoch + 1} train_loss: {train_loss}')
 
-    model_path = Path(config['result_paths']['model_weights'], 'runs', f'{run_id}.model')
+    result_folder = 'iam' if iam else 'runs'
+    model_path = Path(config['result_paths']['model_weights'], result_folder, f'{run_or_writer_id}.model')
     model_path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(seq2seq.state_dict(), model_path)
     print(f'Trained model saved as {model_path}')
     return model_path
 
 
-def test_with_imgs_from_input_folder(labels_file, image_folder, model_path, prediction_file_prefix):
+def test_images(labels_file, image_folder, model_path, prediction_file_prefix):
     test_loader = get_data_loader(labels_file, image_folder)
     seq2seq = init_s2s_model(model_path)
     test_loss = test(test_loader, seq2seq, config['result_paths']['evaluations'], f'{prediction_file_prefix}test_predict_seq')
     print(f'Test loss of {model_path}: {test_loss}')
-
-
-def train_and_test_with_synthesized_imgs(writer, n_synth_imgs, labels_file, image_folder, test_run=True):
-    evaluations_path = config['result_paths']['evaluations']
-    prediction_file_prefix = f'author_{writer}_'
-
-    train_loader = get_data_loader(labels_file, image_folder)
-    seq2seq = init_s2s_model()
-    opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
-    scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
-
-    if test_run:
-        test_loader = get_data_loader(config['result_paths']['labels_path'] + f'gt_{writer}')
-        start_epoch = 0
-
-        test_loss = test(test_loader, seq2seq, evaluations_path,
-                         f'{prediction_file_prefix}test_predict_seq.{start_epoch}')
-        print(f'epoch: {start_epoch} test_loss: {test_loss}')
-        write_loss(test_loss, writer, 'test', n_synth_imgs)
-
-    for epoch in range(EPOCH):
-        train_loss = train(train_loader, seq2seq, opt, evaluations_path,
-                           f'{prediction_file_prefix}train_predict_seq.{epoch + 1}')
-        scheduler.step()
-        print(f'epoch: {epoch + 1} train_loss: {train_loss}')
-        write_loss(train_loss, writer, 'train', n_synth_imgs)
-
-        if test_run:
-            test_loss = test(test_loader, seq2seq, evaluations_path,
-                             f'{prediction_file_prefix}test_predict_seq.{epoch + 1}')
-            print(f'epoch: {epoch + 1} test_loss: {test_loss}')
-            write_loss(test_loss, writer, 'test', n_synth_imgs)
 
 
 def get_data_loader(labels_file, image_folder=None):

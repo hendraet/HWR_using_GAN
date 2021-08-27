@@ -1,4 +1,5 @@
 import yaml
+from pathlib import Path
 from os import listdir
 
 with open('config.yaml') as f:
@@ -13,20 +14,24 @@ def parse_data(writer):
                 labels.append(" ".join(line.split(' ')[1:]))
                 image_files.append(line.split(',')[1].split(' ')[0])
 
-    with open(config['result_paths']['labels_path'] + f'style_of_{writer}', 'w+') as f:
+    example_labels = Path(config['result_paths']['labels_path'] + f'style_of_{writer}')
+    with open(example_labels, 'w+') as f:
         for index, (image_file, label) in enumerate(zip(image_files, labels)):
             line = f'{writer},{image_file} {label}'
             f.write(line)
             if index >= 14:
                 break
 
-    with open(config['result_paths']['labels_path'] + f'gt_{writer}', 'w+') as f:
+    groundtruth_labels = Path(config['result_paths']['labels_path'] + f'gt_{writer}')
+    with open(groundtruth_labels, 'w+') as f:
         for image_file, label in zip(image_files, labels):
             line = f'{image_file}.png {label}'
             f.write(line)
+    return example_labels, groundtruth_labels
 
 
 def create_writer_id(synthesized_img_folder):
+    synthesized_img_folder.mkdir(parents=True, exist_ok=True)
     file_names = [int(folder) for folder in listdir(synthesized_img_folder)]
     if not len(file_names) == 0:
         run_id = max(file_names) + 1

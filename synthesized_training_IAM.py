@@ -3,9 +3,9 @@ import yaml
 import argparse
 from pathlib import Path
 from GAN.create_imgs import create_images_from_source
-from HWR.train_with_synth_imgs import train_and_test_with_synthesized_imgs
+from HWR.train_with_synth_imgs import train_with_synth_imgs
 from create_train_part import create_train_partition
-from data_parser import parse_data
+from utils import parse_data
 
 # TODO Merge into main script and add --iam flag
 parser = argparse.ArgumentParser(
@@ -38,13 +38,16 @@ if synthesized_img_path.exists():
 create_images_from_source(
     writer,
     args.n_generated_images,
-    config['data_dir'],
+    config['iam_words'],
     config['gan_default_model'],
     'iam')
 
 # create HWR training partition from generated words
 hwr_training_labels_file = create_train_partition(writer, synthesized_img_path, config['result_paths']['labels_path'])
 # train HWR with synthesized images of this writer
-train_and_test_with_synthesized_imgs(writer, args.n_generated_images, hwr_training_labels_file, synthesized_img_path)
+model_path = train_with_synth_imgs(writer, hwr_training_labels_file, synthesized_img_path, True)
+
+# test_images()
+
 
 # TODO save model
