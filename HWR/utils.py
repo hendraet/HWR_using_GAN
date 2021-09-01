@@ -12,7 +12,6 @@ vocab_size = loadData.num_classes + num_tokens
 index2letter = loadData.index2letter
 FLIP = loadData.FLIP
 
-load_data_func = loadData.loadData
 
 def visualizeAttn(img, first_img_real_len, attn, epoch, count_n, name):
 

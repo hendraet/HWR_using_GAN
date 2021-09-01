@@ -48,18 +48,14 @@ class IAM_words(D.Dataset):
         return len(self.file_label)
 
     def readImage_keepRatio(self, file_name, flip):
-        if RM_BACKGROUND:
-            file_name, thresh = file_name.split(',')
-            thresh = int(thresh)
         url = self.image_dir / file_name
         img = cv2.imread(str(url), 0)
         if img is None:
             print('###!Cannot find image: ' + str(url))
-        if RM_BACKGROUND:
-            img[img>thresh] = 255
-        #img = 255 - img
-        #img = cv2.resize(img, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
-        #size = img.shape[0] * img.shape[1]
+
+        # Use adaptive thresholding in both models
+        thresh, _ = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
+        img[img > thresh] = 255
 
         rate = float(IMG_HEIGHT) / img.shape[0]
         img = cv2.resize(img, (int(img.shape[1]*rate)+1, IMG_HEIGHT), interpolation=cv2.INTER_CUBIC) # INTER_AREA con error
@@ -75,9 +71,6 @@ class IAM_words(D.Dataset):
             img = 255 - img
 
         img_width = img.shape[-1]
-
-        if flip: # because of using pack_padded_sequence, first flip, then pad it
-            img = np.flip(img, 1)
 
         if img_width > IMG_WIDTH:
             outImg = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT), interpolation=cv2.INTER_AREA)
@@ -114,36 +107,4 @@ class IAM_words(D.Dataset):
                 new_out.append(ele)
             return new_out
         return ll, make_weights(new_label_len, self.output_max_len)
-
-def loadData():
-
-    subname = 'line'
-    if RM_BACKGROUND:
-        gt_tr = 'RWTH.iam_'+subname+'_gt_final.train.thresh'
-        gt_va = 'RWTH.iam_'+subname+'_gt_final.valid.thresh'
-        gt_te = 'RWTH.iam_'+subname+'_gt_final.test.thresh'
-    else:
-        pass
-        #gt_tr = 'iam_word_gt_final.train'
-        #gt_va = 'iam_word_gt_final.valid'
-        #gt_te = 'iam_word_gt_final.test'
-
-    with open(baseDir+gt_tr, 'r') as f_tr:
-        data_tr = f_tr.readlines()
-        file_label_tr = [i[:-1].split(' ') for i in data_tr]
-
-    with open(baseDir+gt_va, 'r') as f_va:
-        data_va = f_va.readlines()
-        file_label_va = [i[:-1].split(' ') for i in data_va]
-
-    with open(baseDir+gt_te, 'r') as f_te:
-        data_te = f_te.readlines()
-        file_label_te = [i[:-1].split(' ') for i in data_te]
-
-    np.random.shuffle(file_label_tr)
-    data_train = IAM_words(file_label_tr, augmentation=True)
-    data_valid = IAM_words(file_label_va, augmentation=False)
-    data_test = IAM_words(file_label_te, augmentation=False)
-    return data_train, data_valid, data_test
-
 

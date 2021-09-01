@@ -10,6 +10,7 @@ from .models.attention import locationAttention as Attention
 from .models.seq2seq import Seq2Seq
 from pathlib import Path
 import yaml
+import subprocess as sub
 
 with open('config.yaml') as f:
     config = yaml.safe_load(f)
@@ -80,7 +81,7 @@ def test(test_loader, seq2seq, prediction_path, file_name):
 
 
 def train_with_synth_imgs(run_or_writer_id, labels_file, image_folder, iam=False):
-    train_loader = get_data_loader(labels_file, image_folder)
+    train_loader = get_data_loader(labels_file, image_folder, )
     seq2seq = init_s2s_model()
     opt = optim.Adam(seq2seq.parameters(), lr=learning_rate)
     scheduler = optim.lr_scheduler.MultiStepLR(opt, milestones=lr_milestone, gamma=lr_gamma)
@@ -90,9 +91,9 @@ def train_with_synth_imgs(run_or_writer_id, labels_file, image_folder, iam=False
             train_loss = train(train_loader, seq2seq, opt, config['result_paths']['evaluations'],
                                f'writer_{run_or_writer_id}_train_predict_seq.{epoch + 1}')
         else:
-            train_loss = train(train_loader, seq2seq, opt)
+            train_loss = train(train_loader, seq2seq, opt, config['result_paths']['evaluations'],
+                               f'run_{run_or_writer_id}_train_predict_seq.{epoch + 1}')
         scheduler.step()
-        print(f'epoch: {epoch + 1} train_loss: {train_loss}')
 
     result_folder = 'iam' if iam else 'runs'
     model_path = Path(config['result_paths']['model_weights'], result_folder, f'{run_or_writer_id}.model')
@@ -106,7 +107,14 @@ def test_images(labels_file, image_folder, model_path, prediction_file_prefix):
     test_loader = get_data_loader(labels_file, image_folder)
     seq2seq = init_s2s_model(model_path)
     test_loss = test(test_loader, seq2seq, config['result_paths']['evaluations'], f'{prediction_file_prefix}test_predict_seq')
-    print(f'Test loss of {model_path}: {test_loss}')
+    cer = calc_cer(labels_file, config['result_paths']['evaluations'] + f'{prediction_file_prefix}test_predict_seq')
+    print(f'CER of {model_path}: {cer}')
+
+
+def calc_cer(labels_file, predictions_file):
+    cer = sub.Popen(['HWR/tasas_cer.sh', labels_file, f'{predictions_file}.log'], stdout=sub.PIPE)
+    cer = float(cer.stdout.read().decode('utf8')) / 100
+    return cer
 
 
 def get_data_loader(labels_file, image_folder=None):

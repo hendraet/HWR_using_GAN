@@ -1,14 +1,13 @@
-from create_train_part import create_train_partition
-from GAN.create_imgs import create_images_from_source
-from HWR.train_with_synth_imgs import train_with_synth_imgs, test_images
-from pathlib import Path
 import argparse
 import yaml
 import shutil
-from utils import create_writer_id, parse_data
+from pathlib import Path
+from GAN.create_imgs import create_images_from_source
+from HWR.train_with_synth_imgs import train_with_synth_imgs, test_images
+from utils import create_writer_id, parse_data, create_train_partition
 
 parser = argparse.ArgumentParser(description='Create synthesized images from input images and train HWR with them.')
-parser.add_argument('--n-generated-images', default=150, type=int,
+parser.add_argument('--n_generated_images', default=150, type=int,
                     help='The number of images that the GAN will produce and the HWR train on.')
 parser.add_argument('--input_folder', default='washington_input/', help='Folder that contains the input images.')
 parser.add_argument('--test_folder', default='washington_test/', help='Folder that contains the images to test the trained model on.')
@@ -62,14 +61,14 @@ trained_model_path = train_with_synth_imgs(
 if args.t:
     if args.iam:
         test_images(groundtruth_labels, Path(config['iam_words']),
-                    trained_model_path, f'id_{run_id}_')
+                    trained_model_path, f'writer_{run_id}_')
         test_images(groundtruth_labels, Path(config['iam_words']), config['hwr_default_model'],
-                    f'id_{run_id}_original_')
+                    f'writer_{run_id}_original_')
     else:
         test_folder = Path(args.test_folder)
         labels_file = Path(test_folder, 'labels.txt')
         test_images(labels_file, test_folder,
-                    trained_model_path, f'id_{run_id}_')
+                    trained_model_path, f'run_{run_id}_')
         test_images(labels_file, test_folder, config['hwr_default_model'],
-                    f'id_{run_id}_original_')
+                    f'run_{run_id}_original_')
 
