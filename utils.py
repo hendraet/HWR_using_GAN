@@ -15,6 +15,7 @@ def parse_data(writer):
                 image_files.append(line.split(',')[1].split(' ')[0])
 
     example_labels = Path(config['result_paths']['labels_path'] + f'style_of_{writer}')
+    example_labels.parent.mkdir(parents=True, exist_ok=True)
     with open(example_labels, 'w+') as f:
         for index, (image_file, label) in enumerate(zip(image_files, labels)):
             line = f'{writer},{image_file} {label}'
