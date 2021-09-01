@@ -9,8 +9,8 @@ from utils import create_writer_id, parse_data, create_train_partition
 parser = argparse.ArgumentParser(description='Create synthesized images from input images and train HWR with them.')
 parser.add_argument('--n_generated_images', default=150, type=int,
                     help='The number of images that the GAN will produce and the HWR train on.')
-parser.add_argument('--input_folder', default='washington_input/', help='Folder that contains the input images.')
-parser.add_argument('--test_folder', default='washington_test/', help='Folder that contains the images to test the trained model on.')
+parser.add_argument('--input_folder', default='input_images/', help='Folder that contains the input images.')
+parser.add_argument('--test_folder', default='test_images/', help='Folder that contains the images to test the trained model on.')
 parser.add_argument('-t', action='store_true',
                     help='If specified, the model will be tested on images in the test_folder and compared to the default model.')
 parser.add_argument('--iam', type=str, default=None, help='If you want to train on a specified IAM writer.')

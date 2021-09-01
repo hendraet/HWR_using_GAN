@@ -77,7 +77,6 @@ def create_images(img_names, model_file, n_words, img_folder, result_folder):
     model = ConTranModel(NUM_WRITERS, 0, True).to(gpu)
     print('Loading ' + model_file)
     model.load_state_dict(torch.load(model_file))
-    print('Model loaded')
     model.eval()
     num = 0
     with torch.no_grad():
