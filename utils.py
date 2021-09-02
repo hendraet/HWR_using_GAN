@@ -14,7 +14,7 @@ def parse_data(writer):
                 labels.append(" ".join(line.split(' ')[1:]))
                 image_files.append(line.split(',')[1].split(' ')[0])
 
-    example_labels = Path(config['result_paths']['labels_path'] + f'style_of_{writer}')
+    example_labels = Path(config['result_paths']['labels_path'], 'iam', f'style_of_{writer}')
     example_labels.parent.mkdir(parents=True, exist_ok=True)
     with open(example_labels, 'w+') as f:
         for index, (image_file, label) in enumerate(zip(image_files, labels)):
@@ -23,7 +23,7 @@ def parse_data(writer):
             if index >= 14:
                 break
 
-    groundtruth_labels = Path(config['result_paths']['labels_path'] + f'gt_{writer}')
+    groundtruth_labels = Path(config['result_paths']['labels_path'], 'iam', f'gt_{writer}')
     with open(groundtruth_labels, 'w+') as f:
         for image_file, label in zip(image_files, labels):
             line = f'{image_file}.png {label}'
