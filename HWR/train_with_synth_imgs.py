@@ -27,14 +27,6 @@ def init_s2s_model(model_file=config['hwr_default_model']):
     return seq2seq
 
 
-# TODO From utils
-def write_loss(loss_value, wid, flag, n_synth_imgs, folder_name=config['result_paths']['evaluations']):
-    file_name = Path(folder_name, wid, f'{n_synth_imgs}_imgs_{flag}_loss')
-    file_name.parent.mkdir(parents=True, exist_ok=True)
-    with open(file_name, 'a') as f:
-        f.write(f'{str(loss_value)}\n')
-
-
 def calc_loss(output, labels):
     test_label = labels.permute(1, 0)[1:].contiguous().view(-1)  # remove<GO>
     output_label = output.view(-1, vocab_size)  # remove last <EOS>
@@ -43,7 +35,7 @@ def calc_loss(output, labels):
     return loss
 
 
-def train(train_loader, seq2seq, opt, prediction_path=None, file_name=None):
+def train(train_loader, seq2seq, opt, prediction_log_file=None):
     seq2seq.train()
     total_loss = 0
     for num, (train_index, train_in, train_in_len, train_out) in enumerate(train_loader):
@@ -51,8 +43,8 @@ def train(train_loader, seq2seq, opt, prediction_path=None, file_name=None):
         output, attention_weights = seq2seq(train_in, train_out, train_in_len,
                                             teacher_rate=0, train=True)  # (100-1, 32, 62+1)
 
-        if prediction_path and file_name:
-            writePredict(prediction_path, file_name, train_index, output)
+        if prediction_log_file:
+            writePredict(prediction_log_file, train_index, output)
 
         loss = calc_loss(output, train_out)
         total_loss += loss.data.item()
@@ -64,7 +56,7 @@ def train(train_loader, seq2seq, opt, prediction_path=None, file_name=None):
     return total_loss
 
 
-def test(test_loader, seq2seq, prediction_path, file_name):
+def test(test_loader, seq2seq, prediction_log_file):
     seq2seq.eval()
     total_loss = 0
     for num, (test_index, test_in, test_in_len, test_out) in enumerate(test_loader):
@@ -72,7 +64,7 @@ def test(test_loader, seq2seq, prediction_path, file_name):
             test_in, test_out = test_in.cuda(), test_out.cuda()
             output, attention_weights = seq2seq(test_in, test_out, test_in_len, teacher_rate=False, train=False)
 
-        writePredict(prediction_path, file_name, test_index, output)
+        writePredict(prediction_log_file, test_index, output)
         loss = calc_loss(output, test_out)
         total_loss += loss.data.item()
 
@@ -88,11 +80,9 @@ def train_with_synth_imgs(run_or_writer_id, labels_file, image_folder, iam=False
 
     for epoch in range(EPOCH):
         if iam:
-            train_loss = train(train_loader, seq2seq, opt, config['result_paths']['evaluations'],
-                               f'writer_{run_or_writer_id}_train_predict_seq.{epoch + 1}')
+            train_loss = train(train_loader, seq2seq, opt, Path(config['result_paths']['evaluations'], f'writer_{run_or_writer_id}_train_predict_seq.{epoch + 1}.log'))
         else:
-            train_loss = train(train_loader, seq2seq, opt, config['result_paths']['evaluations'],
-                               f'run_{run_or_writer_id}_train_predict_seq.{epoch + 1}')
+            train_loss = train(train_loader, seq2seq, opt, Path(config['result_paths']['evaluations'], f'run_{run_or_writer_id}_train_predict_seq.{epoch + 1}.log'))
         scheduler.step()
 
     result_folder = 'iam' if iam else 'runs'
@@ -106,13 +96,14 @@ def train_with_synth_imgs(run_or_writer_id, labels_file, image_folder, iam=False
 def test_images(labels_file, image_folder, model_path, prediction_file_prefix):
     test_loader = get_data_loader(labels_file, image_folder)
     seq2seq = init_s2s_model(model_path)
-    test_loss = test(test_loader, seq2seq, config['result_paths']['evaluations'], f'{prediction_file_prefix}test_predict_seq')
-    cer = calc_cer(labels_file, config['result_paths']['evaluations'] + f'{prediction_file_prefix}test_predict_seq')
+    prediction_log_file = Path(config['result_paths']['evaluations'], f'{prediction_file_prefix}test_predict_seq.log')
+    test_loss = test(test_loader, seq2seq, prediction_log_file)
+    cer = calc_cer(labels_file, prediction_log_file)
     print(f'CER of {model_path}: {cer}')
 
 
 def calc_cer(labels_file, predictions_file):
-    cer = sub.Popen(['HWR/tasas_cer.sh', labels_file, f'{predictions_file}.log'], stdout=sub.PIPE)
+    cer = sub.Popen(['HWR/tasas_cer.sh', labels_file, predictions_file], stdout=sub.PIPE)
     cer = float(cer.stdout.read().decode('utf8')) / 100
     return cer
 
