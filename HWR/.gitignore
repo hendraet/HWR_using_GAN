@@ -1,5 +1,0 @@
-*.gz
-__pycache__/
-pred_logs.20180124/
-imgs.20180124/
-multi-GPU.kl

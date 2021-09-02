@@ -1,9 +1,7 @@
 import torch
 from torch.autograd import Variable
 import numpy as np
-from .utils import visualizeAttn, writePredict, writeLoss, HEIGHT, WIDTH, output_max_len, vocab_size, FLIP, tokens
-
-#torch.cuda.set_device(1)
+from .utils import vocab_size, tokens
 
 LABEL_SMOOTH = True
 
@@ -12,13 +10,7 @@ VISUALIZE_TRAIN = True
 
 BATCH_SIZE = 32
 learning_rate = 2 * 1e-4
-#lr_milestone = [30, 50, 70, 90, 120]
-#lr_milestone = [20, 40, 60, 80, 100]
-#lr_milestone = [15, 25, 35, 45, 55, 65]
-#lr_milestone = [30, 40, 50, 60, 70]
-#lr_milestone = [30, 40, 60, 80, 100]
 lr_milestone = [20, 40, 60, 80, 100]
-#lr_milestone = [20, 40, 46, 60, 80, 100]
 
 lr_gamma = 0.5
 
@@ -29,8 +21,6 @@ EARLY_STOP_EPOCH = 20 # None: no early stopping
 HIDDEN_SIZE_ENC = 512
 HIDDEN_SIZE_DEC = 512 # model/encoder.py SUM_UP=False: enc:dec = 1:2  SUM_UP=True: enc:dec = 1:1
 CON_STEP = None # CON_STEP = 4 # encoder output squeeze step
-#CurriculumModelID = -1 # < 0: do not use curriculumLearning, train from scratch
-#CurriculumModelID = 170 # 'save_weights/seq2seq-170.model.backup'
 EMBEDDING_SIZE = 60 # IAM
 TRADEOFF_CONTEXT_EMBED = None # = 5 tradeoff between embedding:context vector = 1:5
 TEACHER_FORCING = False
