@@ -33,7 +33,9 @@ test_img_2.png world
 Afterwards the pipeline can be started with `python3 synthesized_training.py -t`
 
 If writers of the IAM dataset should be trained, the IAM words directory needs to be referenced in the `config.yaml` file.
+It expects the IAM dataset in a "flat form", i.e, not in the standard directory structure from the original dataset zip file but all images directly in the referenced directory.  
 Then a given writer can be trained with `python3 synthesized_training.py --iam <Writer_ID>`. 
+The writer id is a three-digit number that from 000 to around 650.  
 Testing can again be executed with the `-t` flag. 
 Testing is done on all images of this specific writer in the IAM dataset.
 The number of images to be synthesized can be adapted with the `--n_generated_images` flag.

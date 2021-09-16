@@ -46,7 +46,7 @@ class IAM_words(D.Dataset):
 
     def __getitem__(self, index):
         word = self.file_label[index]
-        img, img_width = self.readImage_keepRatio(word[0], flip=FLIP)
+        img, img_width = self.read_image_keep_ratio(word[0], flip=FLIP)
         label, label_mask = self.label_padding(' '.join(word[1:]), num_tokens)
         return word[0], img, img_width, label
         # return {'index_sa': file_name, 'input_sa': in_data, 'output_sa': out_data, 'in_len_sa': in_len, 'out_len_sa': out_data_mask}
@@ -54,11 +54,10 @@ class IAM_words(D.Dataset):
     def __len__(self):
         return len(self.file_label)
 
-    def readImage_keepRatio(self, file_name, flip):
+    def read_image_keep_ratio(self, file_name, flip):
         url = self.image_dir / file_name
         img = cv2.imread(str(url), 0)
-        if img is None:
-            print('###!Cannot find image: ' + str(url))
+        assert img is not None, f'Cannot find image: {str(url)}'
 
         # Use adaptive thresholding in both models
         thresh, _ = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
