@@ -59,6 +59,7 @@ def create_images(img_names, model_file, n_words, img_folder, result_folder):
 
     '''data preparation'''
     imgs = [read_image(str(Path(img_folder, img_name))) for img_name in img_names]
+    assert len(imgs) > 0, f"No images could be loaded from the given path ({img_folder})"
     random.shuffle(imgs)
     final_imgs = imgs[:50]
     if len(final_imgs) < 50:
