@@ -58,7 +58,7 @@ def create_images(img_names, model_file, n_words, img_folder, result_folder):
     gpu = torch.device('cuda')
 
     '''data preparation'''
-    imgs = [read_image(img_folder + img_name) for img_name in img_names]
+    imgs = [read_image(str(Path(img_folder, img_name))) for img_name in img_names]
     random.shuffle(imgs)
     final_imgs = imgs[:50]
     if len(final_imgs) < 50:
